@@ -10,7 +10,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .nav-btn { transition: color 0.2s ease-in-out; }
-        /* Hide scrollbar for clean UI */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
@@ -42,7 +41,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Buyer / Platform</label>
-                    <select id="sellPlatform" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none"></select>
+                    <input type="text" id="sellPlatform" list="sourcesList" placeholder="Type or select..." class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none">
                 </div>
             </div>
             
@@ -100,7 +99,7 @@
                 </div>
             </div>
 
-            <!-- VAULT TAB (Aggregated Stock) -->
+            <!-- VAULT TAB -->
             <div id="tab-vault" class="tab-content">
                 <h2 class="text-2xl font-bold mb-5 text-gray-800">Inventory Stock</h2>
                 <div id="activeList" class="space-y-4"></div>
@@ -111,6 +110,9 @@
                 <h2 class="text-2xl font-bold mb-5 text-gray-800">Log Purchase</h2>
                 <div class="bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 space-y-4">
                     
+                    <datalist id="productsList"></datalist>
+                    <datalist id="sourcesList"></datalist>
+
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Purchase Date</label>
                         <input type="date" id="addDate" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -118,7 +120,7 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Product Name</label>
-                        <select id="addName" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                        <input type="text" id="addName" list="productsList" placeholder="Type or pick from list..." class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
                     <div class="flex gap-4">
@@ -134,7 +136,7 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Buyer / Platform Source</label>
-                        <select id="addSource" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                        <input type="text" id="addSource" list="sourcesList" placeholder="Type or pick from list..." class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
 
                     <div>
@@ -160,15 +162,15 @@
 
         </main>
 
-        <!-- 5-TAB BOTTOM NAVIGATION -->
+        <!-- PREMIUM SVG BOTTOM NAVIGATION -->
         <nav class="bg-white border-t border-gray-100 flex justify-between items-end w-full pb-6 pt-3 px-2 shadow-[0_-10px_40px_rgb(0,0,0,0.05)] rounded-t-3xl shrink-0 z-40">
             <button type="button" onclick="switchTab('dashboard')" class="nav-btn flex-1 flex flex-col items-center text-blue-600">
-                <span class="text-xl mb-1">📊</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
                 <span class="text-[9px] font-bold tracking-wide">Dash</span>
             </button>
             
             <button type="button" onclick="switchTab('vault')" class="nav-btn flex-1 flex flex-col items-center text-gray-400 hover:text-blue-500">
-                <span class="text-xl mb-1">📦</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
                 <span class="text-[9px] font-bold tracking-wide">Vault</span>
             </button>
 
@@ -180,12 +182,12 @@
             </div>
             
             <button type="button" onclick="switchTab('buyhistory')" class="nav-btn flex-1 flex flex-col items-center text-gray-400 hover:text-blue-500">
-                <span class="text-xl mb-1">🛒</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
                 <span class="text-[9px] font-bold tracking-wide">Bought</span>
             </button>
 
             <button type="button" onclick="switchTab('history')" class="nav-btn flex-1 flex flex-col items-center text-gray-400 hover:text-blue-500">
-                <span class="text-xl mb-1">📜</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>
                 <span class="text-[9px] font-bold tracking-wide">Sold</span>
             </button>
         </nav>
@@ -195,7 +197,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc, setDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
@@ -215,10 +217,8 @@
         let currentUser = null;
         let globalSettings = { products: [], sources: [] };
 
-        // Set default date to today
         document.getElementById('addDate').valueAsDate = new Date();
 
-        // UI Navigation
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
@@ -235,7 +235,6 @@
             }
         }
 
-        // Auth Logic
         let isLoginMode = true; 
         window.toggleAuthMode = function() {
             isLoginMode = !isLoginMode;
@@ -274,7 +273,7 @@
 
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-        // Settings / Dropdown Logic
+        // Combo Box Settings Storage
         async function loadUserSettings() {
             const docRef = doc(db, "user_settings", currentUser.uid);
             const docSnap = await getDoc(docRef);
@@ -284,7 +283,7 @@
                 if(!globalSettings.products) globalSettings.products = [];
                 if(!globalSettings.sources) globalSettings.sources = [];
             } else {
-                globalSettings = { products: ["Chinese Gem Vol 4", "English 151 Booster Bundle"], sources: ["eBay", "FB Marketplace", "Local Trade"] };
+                globalSettings = { products: ["Chinese Gem Vol 4", "151 Booster Bundle"], sources: ["eBay", "FB Marketplace"] };
                 await setDoc(docRef, globalSettings);
             }
             renderDropdowns();
@@ -296,68 +295,45 @@
         }
 
         function renderDropdowns() {
-            const buildOptions = (arr) => arr.map(item => `<option value="${item}">${item}</option>`).join('') + `<option value="__ADD_NEW__" class="font-bold text-blue-600">+ Add New...</option>`;
-            
-            const prodHtml = `<option value="" disabled selected>Select Product...</option>` + buildOptions(globalSettings.products);
-            document.getElementById('addName').innerHTML = prodHtml;
-            
-            const sourceHtml = `<option value="" disabled selected>Select Source...</option>` + buildOptions(globalSettings.sources);
-            document.getElementById('addSource').innerHTML = sourceHtml;
-            document.getElementById('sellPlatform').innerHTML = sourceHtml; // Use same for selling
+            document.getElementById('productsList').innerHTML = globalSettings.products.map(item => `<option value="${item}">`).join('');
+            document.getElementById('sourcesList').innerHTML = globalSettings.sources.map(item => `<option value="${item}">`).join('');
         }
 
-        // Listen for "+ Add New..." selection
-        document.getElementById('addName').addEventListener('change', async (e) => {
-            if(e.target.value === '__ADD_NEW__') {
-                const newName = prompt("Enter new Product Name:");
-                if(newName && newName.trim() !== "") {
-                    globalSettings.products.push(newName.trim());
-                    await updateSettings();
-                    e.target.value = newName.trim();
-                } else { e.target.selectedIndex = 0; }
+        // Save Custom Inputs to Settings on Add
+        async function checkAndSaveCustomInputs(productName, sourceName) {
+            let updated = false;
+            if (productName && !globalSettings.products.includes(productName)) {
+                globalSettings.products.push(productName);
+                updated = true;
             }
-        });
-
-        document.getElementById('addSource').addEventListener('change', async (e) => {
-            if(e.target.value === '__ADD_NEW__') {
-                const newName = prompt("Enter new Buyer/Platform:");
-                if(newName && newName.trim() !== "") {
-                    globalSettings.sources.push(newName.trim());
-                    await updateSettings();
-                    e.target.value = newName.trim();
-                } else { e.target.selectedIndex = 0; }
+            if (sourceName && !globalSettings.sources.includes(sourceName)) {
+                globalSettings.sources.push(sourceName);
+                updated = true;
             }
-        });
-        document.getElementById('sellPlatform').addEventListener('change', async (e) => {
-            if(e.target.value === '__ADD_NEW__') {
-                const newName = prompt("Enter new Buyer/Platform:");
-                if(newName && newName.trim() !== "") {
-                    globalSettings.sources.push(newName.trim());
-                    await updateSettings();
-                    e.target.value = newName.trim();
-                } else { e.target.selectedIndex = 0; }
-            }
-        });
+            if (updated) await updateSettings();
+        }
 
         // Add Purchase Logic
         document.getElementById('saveItemBtn').addEventListener('click', async () => {
             if(!currentUser) return;
             const date = document.getElementById('addDate').value;
-            const name = document.getElementById('addName').value;
+            const name = document.getElementById('addName').value.trim();
             const qty = parseInt(document.getElementById('addQty').value);
             const buyPrice = parseFloat(document.getElementById('addBuyPrice').value);
-            const source = document.getElementById('addSource').value;
+            const source = document.getElementById('addSource').value.trim();
             const file = document.getElementById('addFile').files[0];
             const btn = document.getElementById('saveItemBtn');
             
-            if(!date || !name || isNaN(qty) || isNaN(buyPrice) || name === '__ADD_NEW__') {
-                alert("Please fill out all fields correctly.");
+            if(!date || !name || isNaN(qty) || isNaN(buyPrice)) {
+                alert("Please fill out all required fields.");
                 return;
             }
 
             btn.innerText = "Saving...";
             btn.disabled = true;
             
+            await checkAndSaveCustomInputs(name, source);
+
             let fileUrl = "";
             try {
                 if(file) {
@@ -366,11 +342,8 @@
                     fileUrl = await getDownloadURL(storageRef);
                 }
             } catch (err) {
-                console.error("Storage Error:", err);
                 alert("Failed to upload image. Check storage rules.");
-                btn.innerText = "Add to Vault";
-                btn.disabled = false;
-                return; // Stop the save process if image fails
+                btn.innerText = "Add to Vault"; btn.disabled = false; return;
             }
 
             try {
@@ -382,15 +355,16 @@
                     remainingQty: qty,
                     totalBuyPrice: buyPrice,
                     unitCost: buyPrice / qty,
-                    source: source,
+                    source: source || "Unknown",
                     fileUrl: fileUrl,
                     timestamp: new Date().toISOString()
                 });
 
+                document.getElementById('addName').value = '';
                 document.getElementById('addQty').value = '1';
                 document.getElementById('addBuyPrice').value = '';
+                document.getElementById('addSource').value = '';
                 document.getElementById('addFile').value = '';
-                document.getElementById('addName').selectedIndex = 0;
                 
                 btn.innerText = "Add to Vault";
                 btn.disabled = false;
@@ -398,61 +372,77 @@
                 switchTab('vault');
                 loadData();
             } catch (error) {
-                console.error("Firestore Error:", error);
-                alert("Database save failed. Check Firestore rules.");
-                btn.innerText = "Add to Vault";
-                btn.disabled = false;
+                alert("Database save failed.");
+                btn.innerText = "Add to Vault"; btn.disabled = false;
             }
         });
 
-        // Fetch & Render Data
+        // Fetch & Render Data (Including Legacy Cards)
         async function loadData() {
             if(!currentUser) return;
             
             try {
-                // Fetch all purchases
+                // Fetch new Purchases
                 const qPurchases = query(collection(db, "purchases"), where("userId", "==", currentUser.uid));
                 const snapPurchases = await getDocs(qPurchases);
                 
-                // Fetch all sales
+                // Fetch new Sales
                 const qSales = query(collection(db, "sales"), where("userId", "==", currentUser.uid));
                 const snapSales = await getDocs(qSales);
 
-                let allPurchases = [];
-                snapPurchases.forEach(doc => allPurchases.push({ id: doc.id, ...doc.data() }));
-                
-                // Sort purchases by date string (oldest first for FIFO)
-                allPurchases.sort((a, b) => new Date(a.date) - new Date(b.date));
+                // Fetch Legacy Cards (from earlier version of the app)
+                const qLegacy = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
+                const snapLegacy = await getDocs(qLegacy);
 
+                let allPurchases = [];
+                snapPurchases.forEach(doc => { allPurchases.push({ id: doc.id, collection: 'purchases', ...doc.data() }); });
+                
                 let allSales = [];
                 let totalRealizedProfit = 0;
                 snapSales.forEach(doc => {
                     let d = doc.data();
-                    allSales.push({ id: doc.id, ...d });
+                    allSales.push({ id: doc.id, collection: 'sales', ...d });
                     totalRealizedProfit += (d.totalSalePrice - d.totalCostBasis);
                 });
-                // Sort sales newest first
+
+                // Bridge Legacy Data so it isn't lost
+                snapLegacy.forEach(doc => {
+                    let d = doc.data();
+                    let formattedDate = d.dateAdded ? new Date(d.dateAdded.seconds * 1000).toISOString().split('T')[0] : 'Legacy';
+                    
+                    if (d.status === 'active') {
+                        allPurchases.push({ id: doc.id, collection: 'cards', name: d.name, totalQty: 1, remainingQty: 1, totalBuyPrice: d.buyPrice, unitCost: d.buyPrice, source: d.source, date: formattedDate, timestamp: formattedDate });
+                    } else if (d.status === 'sold') {
+                        allSales.push({ id: doc.id, collection: 'cards', name: d.name, qtySold: 1, totalSalePrice: d.sellPrice, totalCostBasis: d.buyPrice, platform: "Unknown", timestamp: formattedDate });
+                        totalRealizedProfit += (d.sellPrice - d.buyPrice);
+                    }
+                });
+
+                // Sort purchases (oldest first for FIFO)
+                allPurchases.sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp));
+                // Sort sales (newest first)
                 allSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-                // Aggregate Vault & Calculate Dash Stats
                 let vaultAgg = {};
                 let totalInvestedActive = 0;
                 let totalActiveItems = 0;
                 let buyHistoryHtml = '';
 
-                // Loop oldest to newest for rendering buy history exactly as bought
+                // Loop oldest to newest for buy history rendering
                 allPurchases.forEach(p => {
-                    // Build Buy History Card
                     buyHistoryHtml = `
-                        <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] mb-3">
-                            <div class="flex justify-between mb-1 items-center">
+                        <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] mb-3 relative group">
+                            <button onclick="deleteEntry('${p.id}', '${p.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                            </button>
+                            <div class="flex justify-between mb-1 items-center pr-8">
                                 <h3 class="font-bold text-gray-800">${p.name}</h3>
-                                <span class="text-xs text-gray-400 font-bold">${p.date}</span>
                             </div>
                             <div class="flex justify-between text-sm items-end mt-2">
                                 <div>
                                     <p class="text-gray-500 font-medium">Bought: <span class="font-bold text-gray-800">${p.totalQty}</span> from ${p.source}</p>
                                     <p class="text-gray-500 font-medium text-xs mt-1">Remaining: ${p.remainingQty}</p>
+                                    <p class="text-xs text-gray-400 font-bold mt-1">${p.date}</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="font-bold text-red-500">$${p.totalBuyPrice.toFixed(2)}</p>
@@ -460,22 +450,18 @@
                                 </div>
                             </div>
                         </div>
-                    ` + buyHistoryHtml; // Prepend to show newest at top
+                    ` + buyHistoryHtml; 
 
-                    // Aggregate for Vault
                     if(p.remainingQty > 0) {
                         totalActiveItems += p.remainingQty;
                         totalInvestedActive += (p.remainingQty * p.unitCost);
                         
-                        if(!vaultAgg[p.name]) {
-                            vaultAgg[p.name] = { name: p.name, totalQty: 0, totalCost: 0 };
-                        }
+                        if(!vaultAgg[p.name]) vaultAgg[p.name] = { name: p.name, totalQty: 0, totalCost: 0 };
                         vaultAgg[p.name].totalQty += p.remainingQty;
                         vaultAgg[p.name].totalCost += (p.remainingQty * p.unitCost);
                     }
                 });
 
-                // Render Vault
                 let vaultHtml = '';
                 Object.values(vaultAgg).forEach(item => {
                     let avgCost = item.totalCost / item.totalQty;
@@ -498,19 +484,20 @@
                     `;
                 });
 
-                // Render Sales History
                 let salesHtml = '';
                 allSales.forEach(s => {
                     let profit = s.totalSalePrice - s.totalCostBasis;
                     salesHtml += `
-                        <div class="bg-gray-50 p-4 rounded-3xl border border-gray-100 opacity-90">
-                            <div class="flex justify-between mb-2">
+                        <div class="bg-gray-50 p-4 rounded-3xl border border-gray-100 opacity-90 relative">
+                            <button onclick="deleteEntry('${s.id}', '${s.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                            </button>
+                            <div class="flex justify-between mb-2 pr-8">
                                 <h3 class="font-extrabold text-gray-700">${s.name} <span class="text-blue-600">x${s.qtySold}</span></h3>
-                                <span class="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded-full font-bold uppercase">Sold</span>
                             </div>
                             <div class="flex justify-between text-sm font-medium mt-2">
                                 <p class="text-gray-500 text-xs">To: ${s.platform}</p>
-                                <p class="text-gray-400 text-xs">${new Date(s.timestamp).toLocaleDateString()}</p>
+                                <p class="text-gray-400 text-xs">${s.timestamp.split('T')[0]}</p>
                             </div>
                             <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-end">
                                 <div>
@@ -533,7 +520,6 @@
                 document.getElementById('dashProfit').innerText = totalRealizedProfit.toFixed(2);
                 document.getElementById('dashCount').innerText = totalActiveItems;
                 
-                // Store fetched active lots globally so the FIFO logic can use them without re-fetching
                 window.currentActiveLots = allPurchases.filter(p => p.remainingQty > 0);
 
             } catch (error) {
@@ -542,7 +528,7 @@
             }
         }
 
-        // Sell Modal Logic (FIFO)
+        // Sell Modal Logic
         window.openSellModal = function(productName, maxQty) {
             document.getElementById('sellProductName').value = productName;
             document.getElementById('sellModalProduct').innerText = productName;
@@ -552,7 +538,7 @@
             document.getElementById('sellQty').value = '';
             document.getElementById('sellQty').max = maxQty;
             document.getElementById('sellTotal').value = '';
-            document.getElementById('sellPlatform').selectedIndex = 0;
+            document.getElementById('sellPlatform').value = '';
             
             document.getElementById('sellModal').classList.remove('hidden');
         }
@@ -566,23 +552,23 @@
             let qtyToSell = parseInt(document.getElementById('sellQty').value);
             const maxQty = parseInt(document.getElementById('sellMaxQty').value);
             const totalSalePrice = parseFloat(document.getElementById('sellTotal').value);
-            const platform = document.getElementById('sellPlatform').value;
+            const platform = document.getElementById('sellPlatform').value.trim();
             const btn = document.getElementById('confirmSellBtn');
 
-            if(isNaN(qtyToSell) || qtyToSell <= 0 || qtyToSell > maxQty || isNaN(totalSalePrice) || !platform || platform === '__ADD_NEW__') {
+            if(isNaN(qtyToSell) || qtyToSell <= 0 || qtyToSell > maxQty || isNaN(totalSalePrice) || !platform) {
                 alert("Please fill out all fields correctly."); return;
             }
 
             btn.innerText = "Processing...";
             btn.disabled = true;
 
+            await checkAndSaveCustomInputs(null, platform);
+
             try {
-                // Get active lots for this product, already sorted oldest first in loadData()
                 let lots = window.currentActiveLots.filter(p => p.name === name);
                 let totalCostBasis = 0;
                 let initialQtyToSell = qtyToSell;
 
-                // FIFO Logic: deduct from oldest lots first
                 for (let lot of lots) {
                     if (qtyToSell <= 0) break;
                     
@@ -591,16 +577,13 @@
                     
                     totalCostBasis += costForTaken;
                     qtyToSell -= takeFromThisLot;
-                    
                     let newRemaining = lot.remainingQty - takeFromThisLot;
                     
-                    // Update the lot in Firestore
-                    await updateDoc(doc(db, "purchases", lot.id), {
+                    await updateDoc(doc(db, lot.collection, lot.id), {
                         remainingQty: newRemaining
                     });
                 }
 
-                // Record the overall Sale
                 await addDoc(collection(db, "sales"), {
                     userId: currentUser.uid,
                     name: name,
@@ -614,15 +597,26 @@
                 closeSellModal();
                 btn.innerText = "Confirm Sale";
                 btn.disabled = false;
-                loadData(); // Refresh UI
+                loadData(); 
 
             } catch (error) {
-                console.error("Sell Error:", error);
                 alert("Failed to process sale.");
                 btn.innerText = "Confirm Sale";
                 btn.disabled = false;
             }
         });
+
+        // Global Delete Function
+        window.deleteEntry = async function(docId, collectionName) {
+            if(!confirm("Are you sure you want to permanently delete this entry?")) return;
+            
+            try {
+                await deleteDoc(doc(db, collectionName, docId));
+                loadData();
+            } catch (error) {
+                alert("Failed to delete entry. Check Firestore rules.");
+            }
+        }
     </script>
 </body>
 </html>
