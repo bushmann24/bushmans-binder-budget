@@ -21,6 +21,25 @@
         <p class="text-blue-600 font-bold animate-pulse">Unlocking Vault...</p>
     </div>
 
+    <!-- MANAGE OPTIONS MODAL (The "+" Button Popup) -->
+    <div id="manageModal" class="hidden fixed inset-0 bg-black/50 z-[300] flex justify-center items-end p-0 backdrop-blur-sm transition-opacity">
+        <div class="bg-white w-full h-[75vh] rounded-t-3xl p-6 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="manageModalTitle" class="text-2xl font-extrabold text-gray-800">Manage</h2>
+                <button type="button" onclick="closeManageModal()" class="text-gray-400 hover:text-gray-600 font-bold text-3xl leading-none">&times;</button>
+            </div>
+            
+            <div class="flex gap-3 mb-6 shrink-0">
+                <input type="text" id="newOptionInput" placeholder="Type new name here..." class="flex-1 p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                <button type="button" onclick="saveNewOption()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-2xl font-bold shadow-md active:scale-95 transition-all">Add</button>
+            </div>
+            
+            <div id="manageOptionsList" class="flex-1 overflow-y-auto space-y-3 pb-8">
+                <!-- Options injected here -->
+            </div>
+        </div>
+    </div>
+
     <!-- SELL MODAL -->
     <div id="sellModal" class="hidden fixed inset-0 bg-black/50 z-[200] flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
@@ -41,7 +60,10 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Buyer / Platform</label>
-                    <input type="text" id="sellPlatform" list="sourcesList" placeholder="Type or select..." class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none">
+                    <div class="flex gap-2">
+                        <select id="sellPlatform" class="flex-1 p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none"></select>
+                        <button type="button" onclick="openManageModal('sources')" class="bg-green-100 hover:bg-green-200 text-green-700 font-extrabold px-4 rounded-xl transition-colors text-xl">+</button>
+                    </div>
                 </div>
             </div>
             
@@ -109,9 +131,6 @@
             <div id="tab-add" class="tab-content">
                 <h2 class="text-2xl font-bold mb-5 text-gray-800">Log Purchase</h2>
                 <div class="bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 space-y-4">
-                    
-                    <datalist id="productsList"></datalist>
-                    <datalist id="sourcesList"></datalist>
 
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Purchase Date</label>
@@ -120,7 +139,10 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Product Name</label>
-                        <input type="text" id="addName" list="productsList" placeholder="Type or pick from list..." class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="flex gap-2">
+                            <select id="addName" class="flex-1 p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            <button type="button" onclick="openManageModal('products')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-5 rounded-2xl transition-colors text-2xl leading-none">+</button>
+                        </div>
                     </div>
                     
                     <div class="flex gap-4">
@@ -136,7 +158,10 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Buyer / Platform Source</label>
-                        <input type="text" id="addSource" list="sourcesList" placeholder="Type or pick from list..." class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="flex gap-2">
+                            <select id="addSource" class="flex-1 p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            <button type="button" onclick="openManageModal('sources')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-5 rounded-2xl transition-colors text-2xl leading-none">+</button>
+                        </div>
                     </div>
 
                     <div>
@@ -216,6 +241,7 @@
 
         let currentUser = null;
         let globalSettings = { products: [], sources: [] };
+        let currentManageType = ''; 
 
         document.getElementById('addDate').valueAsDate = new Date();
 
@@ -244,7 +270,6 @@
         };
 
         onAuthStateChanged(auth, async (user) => {
-            document.getElementById('initialLoader').classList.add('hidden');
             if (user) {
                 currentUser = user;
                 document.getElementById('loginScreen').classList.add('hidden');
@@ -252,12 +277,13 @@
                 document.getElementById('appScreen').classList.add('flex');
                 
                 await loadUserSettings();
-                loadData();
+                await loadData();
             } else {
                 currentUser = null;
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('appScreen').classList.add('hidden');
                 document.getElementById('appScreen').classList.remove('flex');
+                document.getElementById('initialLoader').classList.add('hidden');
             }
         });
 
@@ -266,73 +292,135 @@
             const password = document.getElementById('passwordInput').value;
             if (!email || !password) return alert("Please enter both an email and password.");
             try {
+                document.getElementById('initialLoader').classList.remove('hidden');
                 if (isLoginMode) await signInWithEmailAndPassword(auth, email, password);
                 else await createUserWithEmailAndPassword(auth, email, password);
-            } catch (error) { alert(error.message); }
+            } catch (error) { 
+                document.getElementById('initialLoader').classList.add('hidden');
+                alert(error.message); 
+            }
         });
 
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-        // Combo Box Settings Storage
+        // Manage Settings Logic
         async function loadUserSettings() {
-            const docRef = doc(db, "user_settings", currentUser.uid);
-            const docSnap = await getDoc(docRef);
-            
-            if (docSnap.exists()) {
-                globalSettings = docSnap.data();
-                if(!globalSettings.products) globalSettings.products = [];
-                if(!globalSettings.sources) globalSettings.sources = [];
-            } else {
-                globalSettings = { products: ["Chinese Gem Vol 4", "151 Booster Bundle"], sources: ["eBay", "FB Marketplace"] };
-                await setDoc(docRef, globalSettings);
+            try {
+                const docRef = doc(db, "user_settings", currentUser.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    globalSettings = docSnap.data();
+                    if(!globalSettings.products) globalSettings.products = [];
+                    if(!globalSettings.sources) globalSettings.sources = [];
+                } else {
+                    globalSettings = { products: ["Chinese Gem Vol 4", "151 Booster Bundle"], sources: ["eBay", "FB Marketplace"] };
+                    await setDoc(docRef, globalSettings);
+                }
+                renderDropdowns();
+            } catch (err) {
+                console.error("Settings blocked:", err);
+                // If it fails (due to old rules), provide empty arrays so the app doesn't crash
+                globalSettings = { products: [], sources: [] }; 
+                renderDropdowns();
             }
-            renderDropdowns();
         }
 
         async function updateSettings() {
             await setDoc(doc(db, "user_settings", currentUser.uid), globalSettings);
             renderDropdowns();
+            if(document.getElementById('manageModal').classList.contains('hidden') === false) {
+                renderManageList();
+            }
         }
 
         function renderDropdowns() {
-            document.getElementById('productsList').innerHTML = globalSettings.products.map(item => `<option value="${item}">`).join('');
-            document.getElementById('sourcesList').innerHTML = globalSettings.sources.map(item => `<option value="${item}">`).join('');
+            const buildOptions = (arr) => `<option value="" disabled selected>Select from list...</option>` + arr.map(item => `<option value="${item}">${item}</option>`).join('');
+            document.getElementById('addName').innerHTML = buildOptions(globalSettings.products);
+            document.getElementById('addSource').innerHTML = buildOptions(globalSettings.sources);
+            document.getElementById('sellPlatform').innerHTML = buildOptions(globalSettings.sources);
         }
 
-        // Save Custom Inputs to Settings on Add
-        async function checkAndSaveCustomInputs(productName, sourceName) {
-            let updated = false;
-            if (productName && !globalSettings.products.includes(productName)) {
-                globalSettings.products.push(productName);
-                updated = true;
+        // Manage Modal Functions
+        window.openManageModal = function(type) {
+            currentManageType = type;
+            document.getElementById('manageModalTitle').innerText = type === 'products' ? 'Manage Products' : 'Manage Buyers & Sources';
+            document.getElementById('newOptionInput').value = '';
+            renderManageList();
+            document.getElementById('manageModal').classList.remove('hidden');
+        }
+
+        window.closeManageModal = function() {
+            document.getElementById('manageModal').classList.add('hidden');
+        }
+
+        function renderManageList() {
+            const listEl = document.getElementById('manageOptionsList');
+            const items = currentManageType === 'products' ? globalSettings.products : globalSettings.sources;
+            
+            if (items.length === 0) {
+                listEl.innerHTML = `<p class="text-gray-400 text-center mt-4 text-sm font-bold">List is currently empty.</p>`;
+                return;
             }
-            if (sourceName && !globalSettings.sources.includes(sourceName)) {
-                globalSettings.sources.push(sourceName);
-                updated = true;
+
+            listEl.innerHTML = items.map((item, index) => `
+                <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                    <span class="font-extrabold text-gray-700 truncate flex-1">${item}</span>
+                    <div class="flex gap-2 ml-3">
+                        <button type="button" onclick="editOption(${index})" class="text-blue-600 font-bold px-3 py-2 bg-blue-100 hover:bg-blue-200 rounded-xl text-xs transition-colors">Edit</button>
+                        <button type="button" onclick="deleteOption(${index})" class="text-red-500 font-bold px-3 py-2 bg-red-100 hover:bg-red-200 rounded-xl text-xs transition-colors">Del</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.saveNewOption = async function() {
+            const val = document.getElementById('newOptionInput').value.trim();
+            if(!val) return;
+            const items = currentManageType === 'products' ? globalSettings.products : globalSettings.sources;
+            if(!items.includes(val)) {
+                items.push(val);
+                await updateSettings();
+                document.getElementById('newOptionInput').value = '';
+            } else {
+                alert("This name already exists.");
             }
-            if (updated) await updateSettings();
+        }
+
+        window.editOption = async function(index) {
+            const items = currentManageType === 'products' ? globalSettings.products : globalSettings.sources;
+            const newVal = prompt("Edit name:", items[index]);
+            if(newVal && newVal.trim() !== '' && newVal.trim() !== items[index]) {
+                items[index] = newVal.trim();
+                await updateSettings();
+            }
+        }
+
+        window.deleteOption = async function(index) {
+            if(!confirm("Remove this from your list?")) return;
+            const items = currentManageType === 'products' ? globalSettings.products : globalSettings.sources;
+            items.splice(index, 1);
+            await updateSettings();
         }
 
         // Add Purchase Logic
         document.getElementById('saveItemBtn').addEventListener('click', async () => {
             if(!currentUser) return;
             const date = document.getElementById('addDate').value;
-            const name = document.getElementById('addName').value.trim();
+            const name = document.getElementById('addName').value;
             const qty = parseInt(document.getElementById('addQty').value);
             const buyPrice = parseFloat(document.getElementById('addBuyPrice').value);
-            const source = document.getElementById('addSource').value.trim();
+            const source = document.getElementById('addSource').value;
             const file = document.getElementById('addFile').files[0];
             const btn = document.getElementById('saveItemBtn');
             
-            if(!date || !name || isNaN(qty) || isNaN(buyPrice)) {
+            if(!date || !name || isNaN(qty) || isNaN(buyPrice) || !source) {
                 alert("Please fill out all required fields.");
                 return;
             }
 
             btn.innerText = "Saving...";
             btn.disabled = true;
-            
-            await checkAndSaveCustomInputs(name, source);
 
             let fileUrl = "";
             try {
@@ -355,15 +443,15 @@
                     remainingQty: qty,
                     totalBuyPrice: buyPrice,
                     unitCost: buyPrice / qty,
-                    source: source || "Unknown",
+                    source: source,
                     fileUrl: fileUrl,
                     timestamp: new Date().toISOString()
                 });
 
-                document.getElementById('addName').value = '';
+                document.getElementById('addName').selectedIndex = 0;
                 document.getElementById('addQty').value = '1';
                 document.getElementById('addBuyPrice').value = '';
-                document.getElementById('addSource').value = '';
+                document.getElementById('addSource').selectedIndex = 0;
                 document.getElementById('addFile').value = '';
                 
                 btn.innerText = "Add to Vault";
@@ -377,50 +465,57 @@
             }
         });
 
-        // Fetch & Render Data (Including Legacy Cards)
+        // Fetch & Render Data (Bulletproof Legacy Check)
         async function loadData() {
             if(!currentUser) return;
             
+            let allPurchases = [];
+            let allSales = [];
+            let totalRealizedProfit = 0;
+
             try {
-                // Fetch new Purchases
+                // 1. Fetch new Purchases & Sales
                 const qPurchases = query(collection(db, "purchases"), where("userId", "==", currentUser.uid));
                 const snapPurchases = await getDocs(qPurchases);
-                
-                // Fetch new Sales
-                const qSales = query(collection(db, "sales"), where("userId", "==", currentUser.uid));
-                const snapSales = await getDocs(qSales);
-
-                // Fetch Legacy Cards (from earlier version of the app)
-                const qLegacy = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
-                const snapLegacy = await getDocs(qLegacy);
-
-                let allPurchases = [];
                 snapPurchases.forEach(doc => { allPurchases.push({ id: doc.id, collection: 'purchases', ...doc.data() }); });
                 
-                let allSales = [];
-                let totalRealizedProfit = 0;
+                const qSales = query(collection(db, "sales"), where("userId", "==", currentUser.uid));
+                const snapSales = await getDocs(qSales);
                 snapSales.forEach(doc => {
                     let d = doc.data();
                     allSales.push({ id: doc.id, collection: 'sales', ...d });
                     totalRealizedProfit += (d.totalSalePrice - d.totalCostBasis);
                 });
 
-                // Bridge Legacy Data so it isn't lost
-                snapLegacy.forEach(doc => {
-                    let d = doc.data();
-                    let formattedDate = d.dateAdded ? new Date(d.dateAdded.seconds * 1000).toISOString().split('T')[0] : 'Legacy';
-                    
-                    if (d.status === 'active') {
-                        allPurchases.push({ id: doc.id, collection: 'cards', name: d.name, totalQty: 1, remainingQty: 1, totalBuyPrice: d.buyPrice, unitCost: d.buyPrice, source: d.source, date: formattedDate, timestamp: formattedDate });
-                    } else if (d.status === 'sold') {
-                        allSales.push({ id: doc.id, collection: 'cards', name: d.name, qtySold: 1, totalSalePrice: d.sellPrice, totalCostBasis: d.buyPrice, platform: "Unknown", timestamp: formattedDate });
-                        totalRealizedProfit += (d.sellPrice - d.buyPrice);
-                    }
-                });
+                // 2. Fetch Legacy Cards (Fortified with a try/catch)
+                try {
+                    const qLegacy = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
+                    const snapLegacy = await getDocs(qLegacy);
 
-                // Sort purchases (oldest first for FIFO)
+                    snapLegacy.forEach(doc => {
+                        let d = doc.data();
+                        
+                        // Safely parse old Firebase timestamps
+                        let formattedDate = '2024-01-01'; 
+                        if (d.dateAdded) {
+                            if (d.dateAdded.toDate) formattedDate = d.dateAdded.toDate().toISOString().split('T')[0];
+                            else if (d.dateAdded.seconds) formattedDate = new Date(d.dateAdded.seconds * 1000).toISOString().split('T')[0];
+                            else if (typeof d.dateAdded === 'string') formattedDate = d.dateAdded.split('T')[0];
+                        }
+                        
+                        if (d.status === 'active') {
+                            allPurchases.push({ id: doc.id, collection: 'cards', name: d.name, totalQty: 1, remainingQty: 1, totalBuyPrice: d.buyPrice, unitCost: d.buyPrice, source: d.source || "Unknown", date: formattedDate, timestamp: formattedDate });
+                        } else if (d.status === 'sold') {
+                            allSales.push({ id: doc.id, collection: 'cards', name: d.name, qtySold: 1, totalSalePrice: d.sellPrice, totalCostBasis: d.buyPrice, platform: "Unknown", timestamp: formattedDate });
+                            totalRealizedProfit += (d.sellPrice - d.buyPrice);
+                        }
+                    });
+                } catch (legacyErr) {
+                    console.log("No legacy cards found or permission denied.", legacyErr);
+                }
+
+                // Sort logic
                 allPurchases.sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp));
-                // Sort sales (newest first)
                 allSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
                 let vaultAgg = {};
@@ -428,11 +523,11 @@
                 let totalActiveItems = 0;
                 let buyHistoryHtml = '';
 
-                // Loop oldest to newest for buy history rendering
+                // Build Buy History
                 allPurchases.forEach(p => {
                     buyHistoryHtml = `
                         <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] mb-3 relative group">
-                            <button onclick="deleteEntry('${p.id}', '${p.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
+                            <button type="button" onclick="deleteEntry('${p.id}', '${p.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                             </button>
                             <div class="flex justify-between mb-1 items-center pr-8">
@@ -462,6 +557,7 @@
                     }
                 });
 
+                // Build Vault HTML
                 let vaultHtml = '';
                 Object.values(vaultAgg).forEach(item => {
                     let avgCost = item.totalCost / item.totalQty;
@@ -484,12 +580,13 @@
                     `;
                 });
 
+                // Build Sales HTML
                 let salesHtml = '';
                 allSales.forEach(s => {
                     let profit = s.totalSalePrice - s.totalCostBasis;
                     salesHtml += `
                         <div class="bg-gray-50 p-4 rounded-3xl border border-gray-100 opacity-90 relative">
-                            <button onclick="deleteEntry('${s.id}', '${s.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
+                            <button type="button" onclick="deleteEntry('${s.id}', '${s.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                             </button>
                             <div class="flex justify-between mb-2 pr-8">
@@ -522,9 +619,13 @@
                 
                 window.currentActiveLots = allPurchases.filter(p => p.remainingQty > 0);
 
+                // Stop the loading spinner once everything completes
+                document.getElementById('initialLoader').classList.add('hidden');
+
             } catch (error) {
                 console.error("Error loading data:", error);
-                alert("Failed to load your vault data.");
+                document.getElementById('initialLoader').classList.add('hidden');
+                alert("Failed to load your vault data. Ensure your Firestore Security rules are updated.");
             }
         }
 
@@ -538,7 +639,7 @@
             document.getElementById('sellQty').value = '';
             document.getElementById('sellQty').max = maxQty;
             document.getElementById('sellTotal').value = '';
-            document.getElementById('sellPlatform').value = '';
+            document.getElementById('sellPlatform').selectedIndex = 0;
             
             document.getElementById('sellModal').classList.remove('hidden');
         }
@@ -552,7 +653,7 @@
             let qtyToSell = parseInt(document.getElementById('sellQty').value);
             const maxQty = parseInt(document.getElementById('sellMaxQty').value);
             const totalSalePrice = parseFloat(document.getElementById('sellTotal').value);
-            const platform = document.getElementById('sellPlatform').value.trim();
+            const platform = document.getElementById('sellPlatform').value;
             const btn = document.getElementById('confirmSellBtn');
 
             if(isNaN(qtyToSell) || qtyToSell <= 0 || qtyToSell > maxQty || isNaN(totalSalePrice) || !platform) {
@@ -561,8 +662,6 @@
 
             btn.innerText = "Processing...";
             btn.disabled = true;
-
-            await checkAndSaveCustomInputs(null, platform);
 
             try {
                 let lots = window.currentActiveLots.filter(p => p.name === name);
@@ -609,7 +708,6 @@
         // Global Delete Function
         window.deleteEntry = async function(docId, collectionName) {
             if(!confirm("Are you sure you want to permanently delete this entry?")) return;
-            
             try {
                 await deleteDoc(doc(db, collectionName, docId));
                 loadData();
