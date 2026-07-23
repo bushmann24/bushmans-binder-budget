@@ -40,6 +40,53 @@
         </div>
     </div>
 
+    <!-- EDIT PURCHASE MODAL -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black/50 z-[200] flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h2 class="text-2xl font-extrabold text-gray-800 mb-4">Edit Purchase</h2>
+            <input type="hidden" id="editDocId">
+            <input type="hidden" id="editCollection">
+            <input type="hidden" id="editOriginalQty">
+            <input type="hidden" id="editRemainingQty">
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date</label>
+                    <input type="date" id="editDate" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Product Name</label>
+                    <div class="flex gap-2">
+                        <select id="editName" class="flex-1 p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                        <button type="button" onclick="openManageModal('products')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-4 rounded-xl transition-colors text-xl leading-none">+</button>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Qty</label>
+                        <input type="number" id="editQty" min="1" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="flex-[2]">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Buy Price ($)</label>
+                        <input type="number" id="editBuyPrice" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Source</label>
+                    <div class="flex gap-2">
+                        <select id="editSource" class="flex-1 p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                        <button type="button" onclick="openManageModal('sources')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-4 rounded-xl transition-colors text-xl leading-none">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold p-3 rounded-xl transition-colors">Cancel</button>
+                <button type="button" id="saveEditBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-xl shadow-lg shadow-blue-200 active:scale-95 transition-all">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SELL MODAL -->
     <div id="sellModal" class="hidden fixed inset-0 bg-black/50 z-[200] flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
@@ -50,6 +97,10 @@
             <input type="hidden" id="sellMaxQty">
             
             <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date of Sale</label>
+                    <input type="date" id="sellDate" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none">
+                </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Qty to Sell (Max: <span id="sellMaxLabel"></span>)</label>
                     <input type="number" id="sellQty" min="1" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none">
@@ -62,7 +113,7 @@
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Buyer / Platform</label>
                     <div class="flex gap-2">
                         <select id="sellPlatform" class="flex-1 p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none"></select>
-                        <button type="button" onclick="openManageModal('sources')" class="bg-green-100 hover:bg-green-200 text-green-700 font-extrabold px-4 rounded-xl transition-colors text-xl">+</button>
+                        <button type="button" onclick="openManageModal('sources')" class="bg-green-100 hover:bg-green-200 text-green-700 font-extrabold px-4 rounded-xl transition-colors text-xl leading-none">+</button>
                     </div>
                 </div>
             </div>
@@ -319,8 +370,6 @@
                 }
                 renderDropdowns();
             } catch (err) {
-                console.error("Settings blocked:", err);
-                // If it fails (due to old rules), provide empty arrays so the app doesn't crash
                 globalSettings = { products: [], sources: [] }; 
                 renderDropdowns();
             }
@@ -339,12 +388,14 @@
             document.getElementById('addName').innerHTML = buildOptions(globalSettings.products);
             document.getElementById('addSource').innerHTML = buildOptions(globalSettings.sources);
             document.getElementById('sellPlatform').innerHTML = buildOptions(globalSettings.sources);
+            document.getElementById('editName').innerHTML = buildOptions(globalSettings.products);
+            document.getElementById('editSource').innerHTML = buildOptions(globalSettings.sources);
         }
 
         // Manage Modal Functions
         window.openManageModal = function(type) {
             currentManageType = type;
-            document.getElementById('manageModalTitle').innerText = type === 'products' ? 'Manage Products' : 'Manage Buyers & Sources';
+            document.getElementById('manageModalTitle').innerText = type === 'products' ? 'Manage Products' : 'Manage Sources';
             document.getElementById('newOptionInput').value = '';
             renderManageList();
             document.getElementById('manageModal').classList.remove('hidden');
@@ -359,7 +410,7 @@
             const items = currentManageType === 'products' ? globalSettings.products : globalSettings.sources;
             
             if (items.length === 0) {
-                listEl.innerHTML = `<p class="text-gray-400 text-center mt-4 text-sm font-bold">List is currently empty.</p>`;
+                listEl.innerHTML = `<p class="text-gray-400 text-center mt-4 text-sm font-bold">List is empty.</p>`;
                 return;
             }
 
@@ -423,15 +474,10 @@
             btn.disabled = true;
 
             let fileUrl = "";
-            try {
-                if(file) {
-                    const storageRef = ref(storage, `users/${currentUser.uid}/${Date.now()}_${file.name}`);
-                    await uploadBytes(storageRef, file);
-                    fileUrl = await getDownloadURL(storageRef);
-                }
-            } catch (err) {
-                alert("Failed to upload image. Check storage rules.");
-                btn.innerText = "Add to Vault"; btn.disabled = false; return;
+            if(file) {
+                const storageRef = ref(storage, `users/${currentUser.uid}/${Date.now()}_${file.name}`);
+                await uploadBytes(storageRef, file);
+                fileUrl = await getDownloadURL(storageRef);
             }
 
             try {
@@ -465,7 +511,81 @@
             }
         });
 
-        // Fetch & Render Data (Bulletproof Legacy Check)
+        // Edit Purchase Logic
+        window.openEditModal = function(id, collectionName) {
+            let item = window.allPurchasesData.find(p => p.id === id && p.collection === collectionName);
+            if (!item) return;
+
+            if (item.collection === 'cards') {
+                alert("Legacy items from the old version cannot be edited to protect inventory math. Please delete and re-add if needed.");
+                return;
+            }
+
+            document.getElementById('editDocId').value = id;
+            document.getElementById('editCollection').value = collectionName;
+            document.getElementById('editOriginalQty').value = item.totalQty;
+            document.getElementById('editRemainingQty').value = item.remainingQty;
+
+            document.getElementById('editDate').value = item.date;
+            document.getElementById('editName').value = item.name;
+            document.getElementById('editQty').value = item.totalQty;
+            document.getElementById('editBuyPrice').value = item.totalBuyPrice;
+            document.getElementById('editSource').value = item.source;
+
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        window.closeEditModal = function() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        document.getElementById('saveEditBtn').addEventListener('click', async () => {
+            const id = document.getElementById('editDocId').value;
+            const collectionName = document.getElementById('editCollection').value;
+            const originalQty = parseInt(document.getElementById('editOriginalQty').value);
+            const remainingQty = parseInt(document.getElementById('editRemainingQty').value);
+
+            const date = document.getElementById('editDate').value;
+            const name = document.getElementById('editName').value;
+            const newTotalQty = parseInt(document.getElementById('editQty').value);
+            const totalBuyPrice = parseFloat(document.getElementById('editBuyPrice').value);
+            const source = document.getElementById('editSource').value;
+
+            // Prevent users from setting quantity lower than what they've already sold
+            let soldFromThisLot = originalQty - remainingQty;
+            let newRemaining = newTotalQty - soldFromThisLot;
+
+            if (newRemaining < 0) {
+                alert(`You have already sold ${soldFromThisLot} of these. Total quantity cannot be less than ${soldFromThisLot}.`);
+                return;
+            }
+
+            const btn = document.getElementById('saveEditBtn');
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            try {
+                await updateDoc(doc(db, collectionName, id), {
+                    date: date,
+                    name: name,
+                    totalQty: newTotalQty,
+                    remainingQty: newRemaining,
+                    totalBuyPrice: totalBuyPrice,
+                    unitCost: totalBuyPrice / newTotalQty,
+                    source: source
+                });
+                closeEditModal();
+                btn.innerText = "Save Changes";
+                btn.disabled = false;
+                loadData();
+            } catch(e) {
+                alert("Failed to edit.");
+                btn.innerText = "Save Changes";
+                btn.disabled = false;
+            }
+        });
+
+        // Fetch & Render Data
         async function loadData() {
             if(!currentUser) return;
             
@@ -474,7 +594,6 @@
             let totalRealizedProfit = 0;
 
             try {
-                // 1. Fetch new Purchases & Sales
                 const qPurchases = query(collection(db, "purchases"), where("userId", "==", currentUser.uid));
                 const snapPurchases = await getDocs(qPurchases);
                 snapPurchases.forEach(doc => { allPurchases.push({ id: doc.id, collection: 'purchases', ...doc.data() }); });
@@ -487,15 +606,13 @@
                     totalRealizedProfit += (d.totalSalePrice - d.totalCostBasis);
                 });
 
-                // 2. Fetch Legacy Cards (Fortified with a try/catch)
+                // Bridge Legacy Cards
                 try {
                     const qLegacy = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
                     const snapLegacy = await getDocs(qLegacy);
 
                     snapLegacy.forEach(doc => {
                         let d = doc.data();
-                        
-                        // Safely parse old Firebase timestamps
                         let formattedDate = '2024-01-01'; 
                         if (d.dateAdded) {
                             if (d.dateAdded.toDate) formattedDate = d.dateAdded.toDate().toISOString().split('T')[0];
@@ -503,6 +620,7 @@
                             else if (typeof d.dateAdded === 'string') formattedDate = d.dateAdded.split('T')[0];
                         }
                         
+                        // We strictly rely on the status field for legacy items
                         if (d.status === 'active') {
                             allPurchases.push({ id: doc.id, collection: 'cards', name: d.name, totalQty: 1, remainingQty: 1, totalBuyPrice: d.buyPrice, unitCost: d.buyPrice, source: d.source || "Unknown", date: formattedDate, timestamp: formattedDate });
                         } else if (d.status === 'sold') {
@@ -510,28 +628,33 @@
                             totalRealizedProfit += (d.sellPrice - d.buyPrice);
                         }
                     });
-                } catch (legacyErr) {
-                    console.log("No legacy cards found or permission denied.", legacyErr);
-                }
+                } catch (legacyErr) { }
 
                 // Sort logic
                 allPurchases.sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp));
                 allSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                // Save to window for Edit Modal lookup
+                window.allPurchasesData = allPurchases;
 
                 let vaultAgg = {};
                 let totalInvestedActive = 0;
                 let totalActiveItems = 0;
                 let buyHistoryHtml = '';
 
-                // Build Buy History
                 allPurchases.forEach(p => {
                     buyHistoryHtml = `
                         <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] mb-3 relative group">
-                            <button type="button" onclick="deleteEntry('${p.id}', '${p.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
-                            </button>
-                            <div class="flex justify-between mb-1 items-center pr-8">
-                                <h3 class="font-bold text-gray-800">${p.name}</h3>
+                            <div class="absolute top-4 right-4 flex gap-3">
+                                <button type="button" onclick="openEditModal('${p.id}', '${p.collection}')" class="text-gray-300 hover:text-blue-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                                </button>
+                                <button type="button" onclick="deleteEntry('${p.id}', '${p.collection}')" class="text-gray-300 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                </button>
+                            </div>
+                            <div class="flex justify-between mb-1 items-center pr-[4.5rem]">
+                                <h3 class="font-bold text-gray-800 truncate">${p.name}</h3>
                             </div>
                             <div class="flex justify-between text-sm items-end mt-2">
                                 <div>
@@ -557,7 +680,6 @@
                     }
                 });
 
-                // Build Vault HTML
                 let vaultHtml = '';
                 Object.values(vaultAgg).forEach(item => {
                     let avgCost = item.totalCost / item.totalQty;
@@ -580,10 +702,10 @@
                     `;
                 });
 
-                // Build Sales HTML
                 let salesHtml = '';
                 allSales.forEach(s => {
                     let profit = s.totalSalePrice - s.totalCostBasis;
+                    let displayDate = s.sellDateString || s.timestamp.split('T')[0];
                     salesHtml += `
                         <div class="bg-gray-50 p-4 rounded-3xl border border-gray-100 opacity-90 relative">
                             <button type="button" onclick="deleteEntry('${s.id}', '${s.collection}')" class="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors">
@@ -594,7 +716,7 @@
                             </div>
                             <div class="flex justify-between text-sm font-medium mt-2">
                                 <p class="text-gray-500 text-xs">To: ${s.platform}</p>
-                                <p class="text-gray-400 text-xs">${s.timestamp.split('T')[0]}</p>
+                                <p class="text-gray-400 text-xs">${displayDate}</p>
                             </div>
                             <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-end">
                                 <div>
@@ -618,12 +740,9 @@
                 document.getElementById('dashCount').innerText = totalActiveItems;
                 
                 window.currentActiveLots = allPurchases.filter(p => p.remainingQty > 0);
-
-                // Stop the loading spinner once everything completes
                 document.getElementById('initialLoader').classList.add('hidden');
 
             } catch (error) {
-                console.error("Error loading data:", error);
                 document.getElementById('initialLoader').classList.add('hidden');
                 alert("Failed to load your vault data. Ensure your Firestore Security rules are updated.");
             }
@@ -631,6 +750,7 @@
 
         // Sell Modal Logic
         window.openSellModal = function(productName, maxQty) {
+            document.getElementById('sellDate').valueAsDate = new Date(); // Default to today
             document.getElementById('sellProductName').value = productName;
             document.getElementById('sellModalProduct').innerText = productName;
             document.getElementById('sellMaxQty').value = maxQty;
@@ -650,13 +770,14 @@
 
         document.getElementById('confirmSellBtn').addEventListener('click', async () => {
             const name = document.getElementById('sellProductName').value;
+            const sellDateInput = document.getElementById('sellDate').value;
             let qtyToSell = parseInt(document.getElementById('sellQty').value);
             const maxQty = parseInt(document.getElementById('sellMaxQty').value);
             const totalSalePrice = parseFloat(document.getElementById('sellTotal').value);
             const platform = document.getElementById('sellPlatform').value;
             const btn = document.getElementById('confirmSellBtn');
 
-            if(isNaN(qtyToSell) || qtyToSell <= 0 || qtyToSell > maxQty || isNaN(totalSalePrice) || !platform) {
+            if(!sellDateInput || isNaN(qtyToSell) || qtyToSell <= 0 || qtyToSell > maxQty || isNaN(totalSalePrice) || !platform) {
                 alert("Please fill out all fields correctly."); return;
             }
 
@@ -668,6 +789,7 @@
                 let totalCostBasis = 0;
                 let initialQtyToSell = qtyToSell;
 
+                // FIFO math to deduct sold items properly from the oldest batches first
                 for (let lot of lots) {
                     if (qtyToSell <= 0) break;
                     
@@ -678,10 +800,22 @@
                     qtyToSell -= takeFromThisLot;
                     let newRemaining = lot.remainingQty - takeFromThisLot;
                     
-                    await updateDoc(doc(db, lot.collection, lot.id), {
-                        remainingQty: newRemaining
-                    });
+                    // THIS IS THE CRITICAL BUG FIX: Ensure legacy cards update their status!
+                    if (lot.collection === 'cards') {
+                        await updateDoc(doc(db, lot.collection, lot.id), {
+                            status: 'sold',
+                            sellPrice: totalSalePrice,
+                            remainingQty: newRemaining
+                        });
+                    } else {
+                        await updateDoc(doc(db, lot.collection, lot.id), {
+                            remainingQty: newRemaining
+                        });
+                    }
                 }
+
+                // Append custom time string so sorting works properly
+                const sellTimestamp = sellDateInput + "T12:00:00.000Z";
 
                 await addDoc(collection(db, "sales"), {
                     userId: currentUser.uid,
@@ -690,7 +824,8 @@
                     totalSalePrice: totalSalePrice,
                     totalCostBasis: totalCostBasis,
                     platform: platform,
-                    timestamp: new Date().toISOString()
+                    timestamp: sellTimestamp,
+                    sellDateString: sellDateInput
                 });
 
                 closeSellModal();
@@ -712,7 +847,7 @@
                 await deleteDoc(doc(db, collectionName, docId));
                 loadData();
             } catch (error) {
-                alert("Failed to delete entry. Check Firestore rules.");
+                alert("Failed to delete entry.");
             }
         }
     </script>
