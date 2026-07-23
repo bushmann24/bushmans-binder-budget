@@ -9,116 +9,140 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        /* Smooth transition for bottom nav text */
+        .nav-btn { transition: color 0.2s ease-in-out; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 h-screen flex flex-col">
+<body class="bg-gray-50 text-gray-800 h-screen flex flex-col selection:bg-blue-200">
 
     <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="flex-1 flex flex-col justify-center items-center p-6 bg-white z-50 h-full w-full absolute inset-0">
-        <div class="w-full max-w-sm">
+    <div id="loginScreen" class="flex-1 flex flex-col justify-center items-center p-6 bg-gradient-to-br from-blue-50 to-white z-50 h-full w-full absolute inset-0">
+        <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
             <h1 class="text-3xl font-extrabold text-center text-blue-600 mb-2">Poké Tracker</h1>
-            <p id="authSubtitle" class="text-center text-gray-500 mb-8">Sign in to your private vault</p>
+            <p id="authSubtitle" class="text-center text-gray-500 mb-8 text-sm">Sign in to your private vault</p>
             
-            <input type="email" id="emailInput" placeholder="Email" class="w-full p-3 mb-4 border rounded-xl bg-gray-50">
-            <input type="password" id="passwordInput" placeholder="Password" class="w-full p-3 mb-6 border rounded-xl bg-gray-50">
+            <input type="email" id="emailInput" placeholder="Email" class="w-full p-4 mb-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+            <input type="password" id="passwordInput" placeholder="Password" class="w-full p-4 mb-6 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
             
-            <button id="loginBtn" class="w-full bg-blue-600 text-white font-bold p-3 rounded-xl shadow-md active:scale-95 transition-transform">Login</button>
+            <button type="button" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-4 rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-all">Login</button>
             
-            <!-- The new toggle text underneath -->
-            <p id="authToggleText" class="text-sm text-blue-600 mt-4 cursor-pointer hover:underline text-center font-semibold" onclick="toggleAuthMode()">
+            <p id="authToggleText" class="text-sm text-blue-600 mt-6 cursor-pointer hover:text-blue-800 text-center font-semibold transition-colors" onclick="toggleAuthMode()">
                 Don't have an account? Create one.
             </p>
         </div>
     </div>
 
     <!-- MAIN APP SCREEN -->
-    <div id="appScreen" class="hidden flex-col h-full">
-        <header class="bg-blue-600 text-white p-4 pt-10 shadow-md flex justify-between items-center">
-            <h1 class="text-xl font-bold">My Vault</h1>
-            <button id="logoutBtn" class="text-sm bg-blue-700 px-3 py-1 rounded-lg">Logout</button>
+    <div id="appScreen" class="hidden flex-col h-full relative">
+        <header class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-5 pt-12 shadow-md flex justify-between items-center rounded-b-2xl">
+            <h1 class="text-2xl font-extrabold tracking-tight">My Vault</h1>
+            <button type="button" id="logoutBtn" class="text-sm bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl backdrop-blur-sm transition-all font-semibold">Logout</button>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-4 pb-24">
+        <main class="flex-1 overflow-y-auto p-5 pb-28">
             
             <!-- DASHBOARD TAB -->
-            <div id="tab-dashboard" class="tab-content active">
-                <h2 class="text-2xl font-bold mb-4">Dashboard</h2>
+            <div id="tab-dashboard" class="tab-content active animate-[fadeIn_0.3s_ease-out]">
+                <h2 class="text-2xl font-bold mb-5 text-gray-800">Dashboard</h2>
                 <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border">
-                        <p class="text-xs text-gray-500 font-bold uppercase">Invested</p>
-                        <p class="text-xl font-extrabold text-blue-600">$<span id="dashInvested">0.00</span></p>
+                    <div class="bg-white p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100">
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Invested</p>
+                        <p class="text-2xl font-extrabold text-blue-600">$<span id="dashInvested">0.00</span></p>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border">
-                        <p class="text-xs text-gray-500 font-bold uppercase">Net Profit</p>
-                        <p class="text-xl font-extrabold text-green-600">$<span id="dashProfit">0.00</span></p>
+                    <div class="bg-white p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100">
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Net Profit</p>
+                        <p class="text-2xl font-extrabold text-green-500">$<span id="dashProfit">0.00</span></p>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border col-span-2">
-                        <p class="text-xs text-gray-500 font-bold uppercase">Active Cards</p>
-                        <p class="text-2xl font-extrabold text-gray-800"><span id="dashCount">0</span></p>
+                    <div class="bg-white p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 col-span-2 flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Active Cards</p>
+                            <p class="text-3xl font-extrabold text-gray-800"><span id="dashCount">0</span></p>
+                        </div>
+                        <div class="h-12 w-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- VAULT TAB -->
             <div id="tab-vault" class="tab-content">
-                <h2 class="text-2xl font-bold mb-4">Active Vault</h2>
-                <div id="activeList" class="space-y-3"></div>
+                <h2 class="text-2xl font-bold mb-5 text-gray-800">Active Vault</h2>
+                <div id="activeList" class="space-y-4"></div>
             </div>
 
             <!-- ADD ITEM TAB -->
             <div id="tab-add" class="tab-content">
-                <h2 class="text-2xl font-bold mb-4">Log Purchase</h2>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-4">
+                <h2 class="text-2xl font-bold mb-5 text-gray-800">Log Purchase</h2>
+                <div class="bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 space-y-5">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Card Name</label>
-                        <input type="text" id="addName" placeholder="e.g. Charizard Base Set" class="w-full p-3 border rounded-xl bg-gray-50">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Card Name</label>
+                        <input type="text" id="addName" placeholder="e.g. Charizard Base Set" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Total Buy Price (Including Fees/Tax)</label>
-                        <input type="number" id="addBuyPrice" placeholder="$" class="w-full p-3 border rounded-xl bg-gray-50">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Total Buy Price</label>
+                        <input type="number" id="addBuyPrice" placeholder="$0.00" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Platform Source</label>
-                        <select id="addSource" class="w-full p-3 border rounded-xl bg-gray-50">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Platform Source</label>
+                        <select id="addSource" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
                             <option>FB Marketplace</option>
                             <option>eBay</option>
                             <option>Local Trade</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Upload Invoice (PDF/Image)</label>
-                        <input type="file" id="addFile" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Invoice (PDF/Image)</label>
+                        <input type="file" id="addFile" class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
                     </div>
-                    <button id="saveItemBtn" class="w-full bg-blue-600 text-white font-bold p-3 rounded-xl shadow-md mt-2">Add to Vault</button>
+                    <button type="button" id="saveItemBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-4 rounded-2xl shadow-lg shadow-blue-200 mt-4 transition-all active:scale-95">Add to Vault</button>
                 </div>
             </div>
 
             <!-- HISTORY TAB -->
             <div id="tab-history" class="tab-content">
-                <h2 class="text-2xl font-bold mb-4">Sales History</h2>
-                <div id="historyList" class="space-y-3"></div>
+                <h2 class="text-2xl font-bold mb-5 text-gray-800">Sales History</h2>
+                <div id="historyList" class="space-y-4"></div>
             </div>
 
         </main>
 
-        <!-- BOTTOM NAVIGATION -->
-        <nav class="bg-white border-t p-4 flex justify-between absolute bottom-0 w-full pb-8">
-            <button onclick="switchTab('dashboard')" class="flex-1 text-center font-bold text-gray-400 hover:text-blue-600">📊 Dash</button>
-            <button onclick="switchTab('vault')" class="flex-1 text-center font-bold text-gray-400 hover:text-blue-600">📦 Vault</button>
-            <button onclick="switchTab('add')" class="flex-1 text-center font-bold text-blue-600 text-2xl -mt-2">➕</button>
-            <button onclick="switchTab('history')" class="flex-1 text-center font-bold text-gray-400 hover:text-blue-600">📜 Sold</button>
+        <!-- PREMIUM BOTTOM NAVIGATION -->
+        <nav class="bg-white border-t border-gray-100 flex justify-around items-end absolute bottom-0 w-full pb-6 pt-3 px-2 shadow-[0_-10px_40px_rgb(0,0,0,0.05)] rounded-t-3xl z-40">
+            <!-- Dash Icon -->
+            <button type="button" onclick="switchTab('dashboard')" class="nav-btn flex-1 flex flex-col items-center text-blue-600 active-tab-color">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
+                <span class="text-[10px] font-bold tracking-wide">Dash</span>
+            </button>
+            
+            <!-- Vault Icon -->
+            <button type="button" onclick="switchTab('vault')" class="nav-btn flex-1 flex flex-col items-center text-gray-400 hover:text-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
+                <span class="text-[10px] font-bold tracking-wide">Vault</span>
+            </button>
+
+            <!-- Floating Add Button -->
+            <div class="flex-1 flex justify-center relative">
+                <button type="button" onclick="switchTab('add')" class="absolute bottom-2 bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-blue-300 border-[5px] border-white active:scale-95 transition-transform z-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                </button>
+            </div>
+            
+            <!-- History Icon -->
+            <button type="button" onclick="switchTab('history')" class="nav-btn flex-1 flex flex-col items-center text-gray-400 hover:text-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>
+                <span class="text-[10px] font-bold tracking-wide">Sold</span>
+            </button>
         </nav>
     </div>
 
     <!-- FIREBASE SCRIPT -->
     <script type="module">
-        // Fixed imports to version 10.8.0
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-        // Your specific Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAsRN6B_bcKnKi03QCUZD7yVnmjXN1-1LE",
             authDomain: "bushmans-binder-budget.firebaseapp.com",
@@ -128,7 +152,6 @@
             appId: "1:350540491869:web:9574b7b5460c5ec6f871b4"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -136,21 +159,31 @@
 
         let currentUser = null;
 
-        // UI Elements
         const loginScreen = document.getElementById('loginScreen');
         const appScreen = document.getElementById('appScreen');
         
-        // Tab Switcher Logic
+        // UI Navigation Logic & Styling
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
+            
+            // Highlight active icon
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('text-blue-600');
+                btn.classList.add('text-gray-400');
+            });
+            // Try to find the clicked button and make it blue
+            const activeBtn = event.currentTarget;
+            if(activeBtn.classList.contains('nav-btn')) {
+                activeBtn.classList.remove('text-gray-400');
+                activeBtn.classList.add('text-blue-600');
+            }
         }
 
-        // New Login/Create Account Toggle Logic
         let isLoginMode = true; 
         window.toggleAuthMode = function() {
             isLoginMode = !isLoginMode;
-            
             document.getElementById("authSubtitle").innerText = isLoginMode ? "Sign in to your private vault" : "Create your private vault";
             document.getElementById("loginBtn").innerText = isLoginMode ? "Login" : "Sign Up";
             document.getElementById("authToggleText").innerText = isLoginMode 
@@ -158,13 +191,17 @@
                 : "Already have an account? Log in.";
         };
 
-        // Auth Listener
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 loginScreen.classList.add('hidden');
                 appScreen.classList.remove('hidden');
                 appScreen.classList.add('flex');
+                
+                // CRITICAL FIX: Erase inputs to stop password manager popups
+                document.getElementById('emailInput').value = '';
+                document.getElementById('passwordInput').value = '';
+                
                 loadData();
             } else {
                 currentUser = null;
@@ -174,7 +211,6 @@
             }
         });
 
-        // Upgraded Login/Register Button Logic
         document.getElementById('loginBtn').addEventListener('click', async () => {
             const email = document.getElementById('emailInput').value;
             const password = document.getElementById('passwordInput').value;
@@ -197,7 +233,6 @@
 
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-        // Add Item Logic
         document.getElementById('saveItemBtn').addEventListener('click', async () => {
             if(!currentUser) return;
             const name = document.getElementById('addName').value;
@@ -220,12 +255,12 @@
             }
 
             await addDoc(collection(db, "cards"), {
-                userId: currentUser.uid, // Strict Privacy Lock
+                userId: currentUser.uid,
                 name: name,
                 buyPrice: parseFloat(buyPrice),
                 source: source,
                 fileUrl: fileUrl,
-                status: "active", // 'active' or 'sold'
+                status: "active",
                 sellPrice: 0,
                 dateAdded: new Date()
             });
@@ -239,7 +274,6 @@
             loadData();
         });
 
-        // Fetch & Render Data
         async function loadData() {
             if(!currentUser) return;
             const q = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
@@ -259,17 +293,17 @@
                     totalInvested += data.buyPrice;
                     activeCount++;
                     activeHtml += `
-                        <div class="bg-white p-4 rounded-xl border shadow-sm">
-                            <div class="flex justify-between mb-2">
-                                <h3 class="font-bold text-gray-800">${data.name}</h3>
-                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-lg">${data.source}</span>
+                        <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
+                            <div class="flex justify-between mb-3 items-center">
+                                <h3 class="font-extrabold text-gray-800 text-lg">${data.name}</h3>
+                                <span class="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-full font-bold">${data.source}</span>
                             </div>
-                            <p class="text-sm text-gray-500 mb-3">Cost: <span class="font-bold text-red-500">$${data.buyPrice.toFixed(2)}</span></p>
-                            ${data.fileUrl ? `<a href="${data.fileUrl}" target="_blank" class="text-xs text-blue-600 underline block mb-3">📄 View Invoice</a>` : ''}
+                            <p class="text-sm text-gray-500 mb-4 font-medium">Cost: <span class="font-bold text-red-500">$${data.buyPrice.toFixed(2)}</span></p>
+                            ${data.fileUrl ? `<a href="${data.fileUrl}" target="_blank" class="flex items-center text-sm font-bold text-blue-600 hover:text-blue-800 mb-4"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg> View Invoice</a>` : ''}
                             
-                            <div class="flex gap-2">
-                                <input type="number" id="sell_${id}" placeholder="Final Net Return ($)" class="w-full p-2 border rounded-lg text-sm bg-gray-50">
-                                <button onclick="window.markSold('${id}', ${data.buyPrice})" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold">Sell</button>
+                            <div class="flex gap-3 mt-2 border-t pt-4">
+                                <input type="number" id="sell_${id}" placeholder="Net Return ($)" class="w-full p-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <button type="button" onclick="window.markSold('${id}', ${data.buyPrice})" class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 transition-all">Sell</button>
                             </div>
                         </div>
                     `;
@@ -277,32 +311,33 @@
                     const profit = data.sellPrice - data.buyPrice;
                     totalProfit += profit;
                     historyHtml += `
-                        <div class="bg-white p-4 rounded-xl border shadow-sm opacity-80">
-                            <div class="flex justify-between mb-1">
-                                <h3 class="font-bold text-gray-800 line-through">${data.name}</h3>
-                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-lg">SOLD</span>
+                        <div class="bg-gray-50 p-5 rounded-3xl border border-gray-100 opacity-90">
+                            <div class="flex justify-between mb-2">
+                                <h3 class="font-extrabold text-gray-500 line-through">${data.name}</h3>
+                                <span class="bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-full font-bold">SOLD</span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <p class="text-gray-500">Bought: $${data.buyPrice.toFixed(2)}</p>
-                                <p class="text-gray-500">Net Return: $${data.sellPrice.toFixed(2)}</p>
+                            <div class="flex justify-between text-sm font-medium mt-3">
+                                <p class="text-gray-400">Cost: $${data.buyPrice.toFixed(2)}</p>
+                                <p class="text-gray-400">Return: $${data.sellPrice.toFixed(2)}</p>
                             </div>
-                            <p class="text-right font-bold mt-2 ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">
-                                ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)} Profit
-                            </p>
+                            <div class="mt-3 pt-3 border-t border-gray-200 flex justify-end">
+                                <p class="font-extrabold text-lg ${profit >= 0 ? 'text-green-500' : 'text-red-500'}">
+                                    ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}
+                                </p>
+                            </div>
                         </div>
                     `;
                 }
             });
 
-            document.getElementById('activeList').innerHTML = activeHtml || '<p class="text-gray-400 text-center mt-6">Vault is empty.</p>';
-            document.getElementById('historyList').innerHTML = historyHtml || '<p class="text-gray-400 text-center mt-6">No sales yet.</p>';
+            document.getElementById('activeList').innerHTML = activeHtml || '<div class="text-center py-10"><p class="text-gray-400 font-medium">Your vault is empty.</p></div>';
+            document.getElementById('historyList').innerHTML = historyHtml || '<div class="text-center py-10"><p class="text-gray-400 font-medium">No sales recorded yet.</p></div>';
             
             document.getElementById('dashInvested').innerText = totalInvested.toFixed(2);
             document.getElementById('dashProfit').innerText = totalProfit.toFixed(2);
             document.getElementById('dashCount').innerText = activeCount;
         }
 
-        // Mark as Sold Logic
         window.markSold = async function(id, buyPrice) {
             const sellInput = document.getElementById(`sell_${id}`).value;
             if(!sellInput) {
