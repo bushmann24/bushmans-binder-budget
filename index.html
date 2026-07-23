@@ -2,21 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Poké Tracker Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        /* Smooth transition for bottom nav text */
         .nav-btn { transition: color 0.2s ease-in-out; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 h-screen flex flex-col selection:bg-blue-200">
+<!-- Changed to 100dvh and hidden overflow to lock the app perfectly to the screen -->
+<body class="bg-gray-50 text-gray-800 h-[100dvh] flex flex-col selection:bg-blue-200 overflow-hidden">
+
+    <!-- INITIAL LOADING SCREEN -->
+    <div id="initialLoader" class="flex-1 flex flex-col justify-center items-center bg-white z-[100] absolute inset-0 h-full w-full">
+        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <p class="text-blue-600 font-bold animate-pulse">Unlocking Vault...</p>
+    </div>
 
     <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="flex-1 flex flex-col justify-center items-center p-6 bg-gradient-to-br from-blue-50 to-white z-50 h-full w-full absolute inset-0">
+    <div id="loginScreen" class="hidden flex-1 flex-col justify-center items-center p-6 bg-gradient-to-br from-blue-50 to-white z-50 h-full w-full absolute inset-0">
         <div class="w-full max-w-sm bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
             <h1 class="text-3xl font-extrabold text-center text-blue-600 mb-2">Poké Tracker</h1>
             <p id="authSubtitle" class="text-center text-gray-500 mb-8 text-sm">Sign in to your private vault</p>
@@ -33,13 +39,13 @@
     </div>
 
     <!-- MAIN APP SCREEN -->
-    <div id="appScreen" class="hidden flex-col h-full relative">
-        <header class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-5 pt-12 shadow-md flex justify-between items-center rounded-b-2xl">
+    <div id="appScreen" class="hidden flex-col h-full w-full">
+        <header class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-5 pt-12 shadow-md flex justify-between items-center rounded-b-2xl shrink-0">
             <h1 class="text-2xl font-extrabold tracking-tight">My Vault</h1>
             <button type="button" id="logoutBtn" class="text-sm bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl backdrop-blur-sm transition-all font-semibold">Logout</button>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-5 pb-28">
+        <main class="flex-1 overflow-y-auto p-5 pb-5 relative">
             
             <!-- DASHBOARD TAB -->
             <div id="tab-dashboard" class="tab-content active animate-[fadeIn_0.3s_ease-out]">
@@ -84,12 +90,15 @@
                         <input type="number" id="addBuyPrice" placeholder="$0.00" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Platform Source</label>
-                        <select id="addSource" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
-                            <option>FB Marketplace</option>
-                            <option>eBay</option>
-                            <option>Local Trade</option>
-                        </select>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Buyer / Platform Source</label>
+                        <!-- Changed to standard text input with a datalist attached -->
+                        <input type="text" id="addSource" list="sourceOptions" placeholder="Type a name or pick from list..." class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <datalist id="sourceOptions">
+                            <option value="FB Marketplace">
+                            <option value="eBay">
+                            <option value="Local Trade">
+                            <option value="Card Show">
+                        </datalist>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Invoice (PDF/Image)</label>
@@ -107,8 +116,8 @@
 
         </main>
 
-        <!-- PREMIUM BOTTOM NAVIGATION -->
-        <nav class="bg-white border-t border-gray-100 flex justify-around items-end absolute bottom-0 w-full pb-6 pt-3 px-2 shadow-[0_-10px_40px_rgb(0,0,0,0.05)] rounded-t-3xl z-40">
+        <!-- PREMIUM BOTTOM NAVIGATION (No longer absolute, perfectly anchors to bottom) -->
+        <nav class="bg-white border-t border-gray-100 flex justify-around items-end w-full pb-6 pt-3 px-2 shadow-[0_-10px_40px_rgb(0,0,0,0.05)] rounded-t-3xl shrink-0 z-40">
             <!-- Dash Icon -->
             <button type="button" onclick="switchTab('dashboard')" class="nav-btn flex-1 flex flex-col items-center text-blue-600 active-tab-color">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
@@ -161,21 +170,19 @@
 
         const loginScreen = document.getElementById('loginScreen');
         const appScreen = document.getElementById('appScreen');
+        const initialLoader = document.getElementById('initialLoader');
         
-        // UI Navigation Logic & Styling
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             
-            // Highlight active icon
             const btns = document.querySelectorAll('.nav-btn');
             btns.forEach(btn => {
                 btn.classList.remove('text-blue-600');
                 btn.classList.add('text-gray-400');
             });
-            // Try to find the clicked button and make it blue
             const activeBtn = event.currentTarget;
-            if(activeBtn.classList.contains('nav-btn')) {
+            if(activeBtn && activeBtn.classList.contains('nav-btn')) {
                 activeBtn.classList.remove('text-gray-400');
                 activeBtn.classList.add('text-blue-600');
             }
@@ -192,13 +199,17 @@
         };
 
         onAuthStateChanged(auth, (user) => {
+            // Remove the initial loading screen completely once Firebase resolves
+            initialLoader.classList.add('hidden');
+
             if (user) {
                 currentUser = user;
                 loginScreen.classList.add('hidden');
+                loginScreen.classList.remove('flex');
+                
                 appScreen.classList.remove('hidden');
                 appScreen.classList.add('flex');
                 
-                // CRITICAL FIX: Erase inputs to stop password manager popups
                 document.getElementById('emailInput').value = '';
                 document.getElementById('passwordInput').value = '';
                 
@@ -206,6 +217,8 @@
             } else {
                 currentUser = null;
                 loginScreen.classList.remove('hidden');
+                loginScreen.classList.add('flex');
+                
                 appScreen.classList.add('hidden');
                 appScreen.classList.remove('flex');
             }
@@ -237,105 +250,125 @@
             if(!currentUser) return;
             const name = document.getElementById('addName').value;
             const buyPrice = document.getElementById('addBuyPrice').value;
-            const source = document.getElementById('addSource').value;
+            const source = document.getElementById('addSource').value || "Unknown";
             const file = document.getElementById('addFile').files[0];
+            const btn = document.getElementById('saveItemBtn');
             
             if(!name || !buyPrice) {
                 alert("Please fill in Name and Buy Price.");
                 return;
             }
 
-            document.getElementById('saveItemBtn').innerText = "Saving...";
+            // Lock the button so they don't click it twice
+            btn.innerText = "Saving...";
+            btn.disabled = true;
             
-            let fileUrl = "";
-            if(file) {
-                const storageRef = ref(storage, `users/${currentUser.uid}/${Date.now()}_${file.name}`);
-                await uploadBytes(storageRef, file);
-                fileUrl = await getDownloadURL(storageRef);
+            try {
+                let fileUrl = "";
+                if(file) {
+                    const storageRef = ref(storage, `users/${currentUser.uid}/${Date.now()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    fileUrl = await getDownloadURL(storageRef);
+                }
+
+                await addDoc(collection(db, "cards"), {
+                    userId: currentUser.uid,
+                    name: name,
+                    buyPrice: parseFloat(buyPrice),
+                    source: source,
+                    fileUrl: fileUrl,
+                    status: "active",
+                    sellPrice: 0,
+                    dateAdded: new Date()
+                });
+
+                // Reset inputs
+                document.getElementById('addName').value = '';
+                document.getElementById('addBuyPrice').value = '';
+                document.getElementById('addSource').value = '';
+                document.getElementById('addFile').value = '';
+                
+                btn.innerText = "Add to Vault";
+                btn.disabled = false;
+                
+                switchTab('vault');
+                loadData();
+            } catch (error) {
+                // If something goes wrong, alert the user and reset the button!
+                console.error("Firebase Error:", error);
+                alert("Failed to save! Check your Firebase Storage/Firestore security rules. Error details: " + error.message);
+                btn.innerText = "Add to Vault";
+                btn.disabled = false;
             }
-
-            await addDoc(collection(db, "cards"), {
-                userId: currentUser.uid,
-                name: name,
-                buyPrice: parseFloat(buyPrice),
-                source: source,
-                fileUrl: fileUrl,
-                status: "active",
-                sellPrice: 0,
-                dateAdded: new Date()
-            });
-
-            document.getElementById('addName').value = '';
-            document.getElementById('addBuyPrice').value = '';
-            document.getElementById('addFile').value = '';
-            document.getElementById('saveItemBtn').innerText = "Add to Vault";
-            
-            switchTab('vault');
-            loadData();
         });
 
         async function loadData() {
             if(!currentUser) return;
-            const q = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
-            const querySnapshot = await getDocs(q);
-            
-            let activeHtml = '';
-            let historyHtml = '';
-            let totalInvested = 0;
-            let totalProfit = 0;
-            let activeCount = 0;
-
-            querySnapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const id = docSnap.id;
+            try {
+                const q = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
                 
-                if(data.status === 'active') {
-                    totalInvested += data.buyPrice;
-                    activeCount++;
-                    activeHtml += `
-                        <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
-                            <div class="flex justify-between mb-3 items-center">
-                                <h3 class="font-extrabold text-gray-800 text-lg">${data.name}</h3>
-                                <span class="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-full font-bold">${data.source}</span>
-                            </div>
-                            <p class="text-sm text-gray-500 mb-4 font-medium">Cost: <span class="font-bold text-red-500">$${data.buyPrice.toFixed(2)}</span></p>
-                            ${data.fileUrl ? `<a href="${data.fileUrl}" target="_blank" class="flex items-center text-sm font-bold text-blue-600 hover:text-blue-800 mb-4"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg> View Invoice</a>` : ''}
-                            
-                            <div class="flex gap-3 mt-2 border-t pt-4">
-                                <input type="number" id="sell_${id}" placeholder="Net Return ($)" class="w-full p-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
-                                <button type="button" onclick="window.markSold('${id}', ${data.buyPrice})" class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 transition-all">Sell</button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    const profit = data.sellPrice - data.buyPrice;
-                    totalProfit += profit;
-                    historyHtml += `
-                        <div class="bg-gray-50 p-5 rounded-3xl border border-gray-100 opacity-90">
-                            <div class="flex justify-between mb-2">
-                                <h3 class="font-extrabold text-gray-500 line-through">${data.name}</h3>
-                                <span class="bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-full font-bold">SOLD</span>
-                            </div>
-                            <div class="flex justify-between text-sm font-medium mt-3">
-                                <p class="text-gray-400">Cost: $${data.buyPrice.toFixed(2)}</p>
-                                <p class="text-gray-400">Return: $${data.sellPrice.toFixed(2)}</p>
-                            </div>
-                            <div class="mt-3 pt-3 border-t border-gray-200 flex justify-end">
-                                <p class="font-extrabold text-lg ${profit >= 0 ? 'text-green-500' : 'text-red-500'}">
-                                    ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}
-                                </p>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
+                let activeHtml = '';
+                let historyHtml = '';
+                let totalInvested = 0;
+                let totalProfit = 0;
+                let activeCount = 0;
 
-            document.getElementById('activeList').innerHTML = activeHtml || '<div class="text-center py-10"><p class="text-gray-400 font-medium">Your vault is empty.</p></div>';
-            document.getElementById('historyList').innerHTML = historyHtml || '<div class="text-center py-10"><p class="text-gray-400 font-medium">No sales recorded yet.</p></div>';
-            
-            document.getElementById('dashInvested').innerText = totalInvested.toFixed(2);
-            document.getElementById('dashProfit').innerText = totalProfit.toFixed(2);
-            document.getElementById('dashCount').innerText = activeCount;
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    
+                    if(data.status === 'active') {
+                        totalInvested += data.buyPrice;
+                        activeCount++;
+                        activeHtml += `
+                            <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
+                                <div class="flex justify-between mb-3 items-center">
+                                    <h3 class="font-extrabold text-gray-800 text-lg">${data.name}</h3>
+                                    <span class="bg-blue-50 text-blue-700 text-xs px-3 py-1.5 rounded-full font-bold">${data.source}</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mb-4 font-medium">Cost: <span class="font-bold text-red-500">$${data.buyPrice.toFixed(2)}</span></p>
+                                ${data.fileUrl ? `<a href="${data.fileUrl}" target="_blank" class="flex items-center text-sm font-bold text-blue-600 hover:text-blue-800 mb-4"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg> View Invoice</a>` : ''}
+                                
+                                <div class="flex gap-3 mt-2 border-t pt-4">
+                                    <input type="number" id="sell_${id}" placeholder="Net Return ($)" class="w-full p-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    <button type="button" onclick="window.markSold('${id}', ${data.buyPrice})" class="bg-green-500 hover:bg-green-600 text-white px-5 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 transition-all">Sell</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        const profit = data.sellPrice - data.buyPrice;
+                        totalProfit += profit;
+                        historyHtml += `
+                            <div class="bg-gray-50 p-5 rounded-3xl border border-gray-100 opacity-90">
+                                <div class="flex justify-between mb-2">
+                                    <h3 class="font-extrabold text-gray-500 line-through">${data.name}</h3>
+                                    <span class="bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-full font-bold">SOLD</span>
+                                </div>
+                                <div class="flex justify-between text-sm font-medium mt-3">
+                                    <p class="text-gray-400">Cost: $${data.buyPrice.toFixed(2)}</p>
+                                    <p class="text-gray-400">Return: $${data.sellPrice.toFixed(2)}</p>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-gray-200 flex justify-end">
+                                    <p class="font-extrabold text-lg ${profit >= 0 ? 'text-green-500' : 'text-red-500'}">
+                                        ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                document.getElementById('activeList').innerHTML = activeHtml || '<div class="text-center py-10"><p class="text-gray-400 font-medium">Your vault is empty.</p></div>';
+                document.getElementById('historyList').innerHTML = historyHtml || '<div class="text-center py-10"><p class="text-gray-400 font-medium">No sales recorded yet.</p></div>';
+                
+                document.getElementById('dashInvested').innerText = totalInvested.toFixed(2);
+                document.getElementById('dashProfit').innerText = totalProfit.toFixed(2);
+                document.getElementById('dashCount').innerText = activeCount;
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Failed to load your vault. Check Firestore security rules.");
+            }
         }
 
         window.markSold = async function(id, buyPrice) {
@@ -345,12 +378,16 @@
                 return;
             }
             
-            await updateDoc(doc(db, "cards", id), {
-                status: "sold",
-                sellPrice: parseFloat(sellInput)
-            });
-            
-            loadData();
+            try {
+                await updateDoc(doc(db, "cards", id), {
+                    status: "sold",
+                    sellPrice: parseFloat(sellInput)
+                });
+                loadData();
+            } catch (error) {
+                console.error("Error marking as sold:", error);
+                alert("Failed to update status. Check Firestore rules.");
+            }
         }
     </script>
 </body>
