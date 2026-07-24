@@ -21,7 +21,7 @@
         <p class="text-blue-600 font-bold animate-pulse">Unlocking Vault...</p>
     </div>
 
-    <!-- MANAGE OPTIONS MODAL (The "+" Button Popup) -->
+    <!-- MANAGE OPTIONS MODAL -->
     <div id="manageModal" class="hidden fixed inset-0 bg-black/50 z-[300] flex justify-center items-end p-0 backdrop-blur-sm transition-opacity">
         <div class="bg-white w-full h-[75vh] rounded-t-3xl p-6 shadow-2xl flex flex-col">
             <div class="flex justify-between items-center mb-6">
@@ -36,6 +36,34 @@
             
             <div id="manageOptionsList" class="flex-1 overflow-y-auto space-y-3 pb-8">
                 <!-- Options injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- RIP MODAL -->
+    <div id="ripModal" class="hidden fixed inset-0 bg-black/50 z-[200] flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h2 class="text-2xl font-extrabold text-gray-800 mb-1">Rip Product</h2>
+            <p id="ripModalProduct" class="text-purple-600 font-bold mb-4 text-sm"></p>
+            
+            <input type="hidden" id="ripProductName">
+            <input type="hidden" id="ripMaxQty">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date</label>
+                    <input type="date" id="ripDate" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Qty to Rip (Max: <span id="ripMaxLabel"></span>)</label>
+                    <input type="number" id="ripQty" min="1" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <p class="text-xs text-gray-500 mt-2 italic">* Ripping removes the sealed product from your vault and logs the box cost as a realized expense.</p>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="closeRipModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold p-3 rounded-xl transition-colors">Cancel</button>
+                <button type="button" id="confirmRipBtn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold p-3 rounded-xl shadow-lg shadow-purple-200 active:scale-95 transition-all">Confirm Rip</button>
             </div>
         </div>
     </div>
@@ -162,7 +190,7 @@
                     </div>
                     <div class="bg-white p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100">
                         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Realized Profit</p>
-                        <p class="text-xl font-extrabold text-green-500">$<span id="dashProfit">0.00</span></p>
+                        <p id="dashProfitContainer" class="text-xl font-extrabold text-green-500"><span id="dashProfit">0.00</span></p>
                     </div>
                     <div class="bg-white p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 col-span-2 flex justify-between items-center">
                         <div>
@@ -170,6 +198,12 @@
                             <p class="text-3xl font-extrabold text-gray-800"><span id="dashCount">0</span></p>
                         </div>
                     </div>
+                </div>
+
+                <!-- PERFORMANCE INSIGHTS SECTION -->
+                <h3 class="text-xl font-extrabold text-gray-800 mb-3 mt-8">Performance Insights</h3>
+                <div id="dashInsights" class="space-y-3 pb-6">
+                    <!-- Javascript will inject insights here -->
                 </div>
             </div>
 
@@ -355,7 +389,6 @@
 
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-        // Manage Settings Logic
         async function loadUserSettings() {
             try {
                 const docRef = doc(db, "user_settings", currentUser.uid);
@@ -393,7 +426,6 @@
             document.getElementById('editSource').innerHTML = buildOptions(globalSettings.sources);
         }
 
-        // Manage Modal Functions
         window.openManageModal = function(type) {
             currentManageType = type;
             document.getElementById('manageModalTitle').innerText = type === 'products' ? 'Manage Products' : 'Manage Sources';
@@ -439,7 +471,6 @@
             }
         }
 
-        // SMART SYNC - CASCADE UPDATES FROM THE MANAGE LIST MENU
         window.editOption = async function(index) {
             const items = currentManageType === 'products' ? globalSettings.products : globalSettings.sources;
             const oldName = items[index];
@@ -450,7 +481,6 @@
                 items[index] = finalVal;
                 await updateSettings();
 
-                // Ask the user if they want to sync all historical records
                 if (confirm(`Do you also want to update ALL past purchases and sales from "${oldName}" to "${finalVal}" to keep your history matching?`)) {
                     document.getElementById('initialLoader').classList.remove('hidden');
                     try {
@@ -489,7 +519,7 @@
             await updateSettings();
         }
 
-        // Add Purchase Logic with Custom PDF Renaming
+        // Add Purchase Logic
         document.getElementById('saveItemBtn').addEventListener('click', async () => {
             if(!currentUser) return;
             const date = document.getElementById('addDate').value;
@@ -510,10 +540,9 @@
 
             let fileUrl = "";
             if(file) {
-                // Formatting File Name: YYYY/MM/DD-Productname
                 const ext = file.name.split('.').pop();
                 const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_'); 
-                const dateFormatted = date.replace(/-/g, '/'); // Formats 2024-05-15 to 2024/05/15
+                const dateFormatted = date.replace(/-/g, '/'); 
                 const newFileName = `${dateFormatted}-${cleanName}.${ext}`;
                 
                 const storageRef = ref(storage, `users/${currentUser.uid}/invoices/${newFileName}`);
@@ -548,7 +577,6 @@
                 loadData();
             } catch (error) {
                 alert("Database save failed: " + error.message);
-                console.error("Save Error:", error);
                 btn.innerText = "Add to Vault"; btn.disabled = false;
             }
         });
@@ -582,7 +610,6 @@
             document.getElementById('editModal').classList.add('hidden');
         }
 
-        // SMART SYNC - CASCADE UPDATES FROM THE SINGLE EDIT MENU
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
             const id = document.getElementById('editDocId').value;
             const collectionName = document.getElementById('editCollection').value;
@@ -615,7 +642,6 @@
             document.getElementById('initialLoader').classList.remove('hidden');
 
             try {
-                // Update this specific entry
                 await updateDoc(doc(db, collectionName, id), {
                     date: date,
                     name: name,
@@ -626,7 +652,6 @@
                     source: source
                 });
 
-                // If user wants to cascade the name change to everything else
                 if (syncAll) {
                     const updatePromises = [];
                     const qP = query(collection(db, "purchases"), where("userId", "==", currentUser.uid), where("name", "==", oldName));
@@ -663,6 +688,7 @@
             let allPurchases = [];
             let allSales = [];
             let totalRealizedProfit = 0;
+            let insightsData = {};
 
             try {
                 const qPurchases = query(collection(db, "purchases"), where("userId", "==", currentUser.uid));
@@ -674,7 +700,14 @@
                 snapSales.forEach(doc => {
                     let d = doc.data();
                     allSales.push({ id: doc.id, collection: 'sales', ...d });
-                    totalRealizedProfit += (d.totalSalePrice - d.totalCostBasis);
+                    let profit = d.totalSalePrice - d.totalCostBasis;
+                    totalRealizedProfit += profit;
+                    
+                    // Aggregate stats for Dashboard Insights
+                    if(!insightsData[d.name]) insightsData[d.name] = { sold: 0, profit: 0, ripped: 0 };
+                    insightsData[d.name].sold += d.qtySold;
+                    insightsData[d.name].profit += profit;
+                    if(d.platform === 'Ripped/Opened') insightsData[d.name].ripped += d.qtySold;
                 });
 
                 try {
@@ -694,7 +727,13 @@
                             allPurchases.push({ id: doc.id, collection: 'cards', name: d.name, totalQty: 1, remainingQty: 1, totalBuyPrice: d.buyPrice, unitCost: d.buyPrice, source: d.source || "Unknown", date: formattedDate, timestamp: formattedDate });
                         } else if (d.status === 'sold') {
                             allSales.push({ id: doc.id, collection: 'cards', name: d.name, qtySold: 1, totalSalePrice: d.sellPrice, totalCostBasis: d.buyPrice, platform: "Unknown", timestamp: formattedDate });
-                            totalRealizedProfit += (d.sellPrice - d.buyPrice);
+                            let profit = d.sellPrice - d.buyPrice;
+                            totalRealizedProfit += profit;
+                            
+                            // Legacy stats aggregation
+                            if(!insightsData[d.name]) insightsData[d.name] = { sold: 0, profit: 0, ripped: 0 };
+                            insightsData[d.name].sold += 1;
+                            insightsData[d.name].profit += profit;
                         }
                     });
                 } catch (legacyErr) { }
@@ -710,7 +749,6 @@
                 let buyHistoryHtml = '';
 
                 allPurchases.forEach(p => {
-                    // Injecting Invoice link if a fileUrl exists for this purchase
                     let invoiceLink = p.fileUrl ? `<a href="${p.fileUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs text-blue-500 font-bold hover:text-blue-700 mt-2 bg-blue-50 px-2 py-1 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg> View Invoice</a>` : '';
 
                     buyHistoryHtml = `
@@ -765,9 +803,12 @@
                                     x${item.totalQty}
                                 </div>
                             </div>
-                            <div class="mt-4 border-t border-gray-100 pt-4 flex justify-between items-center">
-                                <p class="text-sm text-gray-500 font-medium">Total Value: <span class="font-bold text-gray-800">$${item.totalCost.toFixed(2)}</span></p>
-                                <button type="button" onclick="openSellModal('${item.name}', ${item.totalQty})" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md active:scale-95 transition-all">Sell</button>
+                            <div class="mt-4 border-t border-gray-100 pt-4 flex justify-between items-center gap-2">
+                                <p class="text-sm text-gray-500 font-medium whitespace-nowrap">Total Value: <span class="font-bold text-gray-800">$${item.totalCost.toFixed(2)}</span></p>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="openRipModal('${item.name}', ${item.totalQty})" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded-xl text-sm font-bold active:scale-95 transition-all">Rip</button>
+                                    <button type="button" onclick="openSellModal('${item.name}', ${item.totalQty})" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md active:scale-95 transition-all">Sell</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -786,7 +827,7 @@
                                 <h3 class="font-extrabold text-gray-700">${s.name} <span class="text-blue-600">x${s.qtySold}</span></h3>
                             </div>
                             <div class="flex justify-between text-sm font-medium mt-2">
-                                <p class="text-gray-500 text-xs">To: ${s.platform}</p>
+                                <p class="text-gray-500 text-xs">To: <span class="${s.platform === 'Ripped/Opened' ? 'text-purple-600 font-bold' : ''}">${s.platform}</span></p>
                                 <p class="text-gray-400 text-xs">${displayDate}</p>
                             </div>
                             <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-end">
@@ -802,12 +843,50 @@
                     `;
                 });
 
+                // Build Performance Insights HTML
+                let statsHtml = '';
+                let statsArr = Object.values(insightsData).filter(s => s.sold > 0);
+                if (statsArr.length === 0) {
+                    statsHtml = '<p class="text-gray-400 text-sm font-medium">Not enough sales data yet.</p>';
+                } else {
+                    statsArr.sort((a,b) => b.sold - a.sold); // Sort by volume moved
+                    statsArr.forEach(st => {
+                        let avgProfit = st.profit / st.sold;
+                        statsHtml += `
+                        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] flex justify-between items-center">
+                            <div class="overflow-hidden pr-2">
+                                <h4 class="font-bold text-gray-800 truncate">${st.name}</h4>
+                                <p class="text-xs text-gray-400 mt-1">Moved: <span class="font-bold text-gray-600">${st.sold} unit${st.sold > 1 ? 's' : ''}</span> ${st.ripped > 0 ? `<span class="text-purple-500 font-bold">(${st.ripped} ripped)</span>` : ''}</p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <p class="text-[10px] uppercase font-bold text-gray-400">Avg Profit</p>
+                                <p class="font-extrabold text-sm ${avgProfit >= 0 ? 'text-green-500' : 'text-red-500'}">${avgProfit >= 0 ? '+' : ''}$${avgProfit.toFixed(2)}/ea</p>
+                            </div>
+                        </div>
+                        `;
+                    });
+                }
+
                 document.getElementById('activeList').innerHTML = vaultHtml || '<p class="text-gray-400 text-center py-10 font-medium">Vault is empty.</p>';
                 document.getElementById('buyHistoryList').innerHTML = buyHistoryHtml || '<p class="text-gray-400 text-center py-10 font-medium">No purchases yet.</p>';
                 document.getElementById('historyList').innerHTML = salesHtml || '<p class="text-gray-400 text-center py-10 font-medium">No sales recorded yet.</p>';
+                document.getElementById('dashInsights').innerHTML = statsHtml;
                 
                 document.getElementById('dashInvested').innerText = totalInvestedActive.toFixed(2);
-                document.getElementById('dashProfit').innerText = totalRealizedProfit.toFixed(2);
+                
+                // Color Logic for Realized Profit
+                const dashProfitContainer = document.getElementById('dashProfitContainer');
+                const dashProfitEl = document.getElementById('dashProfit');
+                dashProfitEl.innerText = (totalRealizedProfit < 0 ? '-' : '') + totalRealizedProfit.toFixed(2);
+                
+                if (totalRealizedProfit < 0) {
+                    dashProfitContainer.classList.remove('text-green-500');
+                    dashProfitContainer.classList.add('text-red-500');
+                } else {
+                    dashProfitContainer.classList.remove('text-red-500');
+                    dashProfitContainer.classList.add('text-green-500');
+                }
+
                 document.getElementById('dashCount').innerText = totalActiveItems;
                 
                 window.currentActiveLots = allPurchases.filter(p => p.remainingQty > 0);
@@ -854,20 +933,61 @@
 
             btn.innerText = "Processing...";
             btn.disabled = true;
+            
+            await processRemoval(name, sellDateInput, qtyToSell, maxQty, totalSalePrice, platform, btn, closeSellModal);
+        });
 
+        // Rip Modal Logic
+        window.openRipModal = function(productName, maxQty) {
+            document.getElementById('ripDate').valueAsDate = new Date(); 
+            document.getElementById('ripProductName').value = productName;
+            document.getElementById('ripModalProduct').innerText = productName;
+            document.getElementById('ripMaxQty').value = maxQty;
+            document.getElementById('ripMaxLabel').innerText = maxQty;
+            
+            document.getElementById('ripQty').value = '1';
+            document.getElementById('ripQty').max = maxQty;
+            
+            document.getElementById('ripModal').classList.remove('hidden');
+        }
+
+        window.closeRipModal = function() {
+            document.getElementById('ripModal').classList.add('hidden');
+        }
+
+        document.getElementById('confirmRipBtn').addEventListener('click', async () => {
+            const name = document.getElementById('ripProductName').value;
+            const ripDateInput = document.getElementById('ripDate').value;
+            let qtyToRip = parseInt(document.getElementById('ripQty').value);
+            const maxQty = parseInt(document.getElementById('ripMaxQty').value);
+            const btn = document.getElementById('confirmRipBtn');
+
+            if(!ripDateInput || isNaN(qtyToRip) || qtyToRip <= 0 || qtyToRip > maxQty) {
+                alert("Please enter a valid quantity."); return;
+            }
+
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+            
+            // Reusing the core deduction logic, but forcing a $0 sale price and labeling it as a rip
+            await processRemoval(name, ripDateInput, qtyToRip, maxQty, 0, "Ripped/Opened", btn, closeRipModal);
+        });
+
+        // Shared FIFO Engine for both Selling and Ripping
+        async function processRemoval(name, actionDateString, qtyToRemove, maxQty, totalSalePrice, platform, buttonElement, modalCloseFunction) {
             try {
                 let lots = window.currentActiveLots.filter(p => p.name === name);
                 let totalCostBasis = 0;
-                let initialQtyToSell = qtyToSell;
+                let initialQtyToRemove = qtyToRemove;
 
                 for (let lot of lots) {
-                    if (qtyToSell <= 0) break;
+                    if (qtyToRemove <= 0) break;
                     
-                    let takeFromThisLot = Math.min(lot.remainingQty, qtyToSell);
+                    let takeFromThisLot = Math.min(lot.remainingQty, qtyToRemove);
                     let costForTaken = takeFromThisLot * lot.unitCost;
                     
                     totalCostBasis += costForTaken;
-                    qtyToSell -= takeFromThisLot;
+                    qtyToRemove -= takeFromThisLot;
                     let newRemaining = lot.remainingQty - takeFromThisLot;
                     
                     if (lot.collection === 'cards') {
@@ -883,30 +1003,30 @@
                     }
                 }
 
-                const sellTimestamp = sellDateInput + "T12:00:00.000Z";
+                const actionTimestamp = actionDateString + "T12:00:00.000Z";
 
                 await addDoc(collection(db, "sales"), {
                     userId: currentUser.uid,
                     name: name,
-                    qtySold: initialQtyToSell,
+                    qtySold: initialQtyToRemove,
                     totalSalePrice: totalSalePrice,
                     totalCostBasis: totalCostBasis,
                     platform: platform,
-                    timestamp: sellTimestamp,
-                    sellDateString: sellDateInput
+                    timestamp: actionTimestamp,
+                    sellDateString: actionDateString
                 });
 
-                closeSellModal();
-                btn.innerText = "Confirm Sale";
-                btn.disabled = false;
+                modalCloseFunction();
+                buttonElement.innerText = (platform === "Ripped/Opened" ? "Confirm Rip" : "Confirm Sale");
+                buttonElement.disabled = false;
                 loadData(); 
 
             } catch (error) {
-                alert("Failed to process sale: " + error.message);
-                btn.innerText = "Confirm Sale";
-                btn.disabled = false;
+                alert("Failed to process transaction: " + error.message);
+                buttonElement.innerText = (platform === "Ripped/Opened" ? "Confirm Rip" : "Confirm Sale");
+                buttonElement.disabled = false;
             }
-        });
+        }
 
         // Global Delete Function
         window.deleteEntry = async function(docId, collectionName) {
