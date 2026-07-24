@@ -190,7 +190,7 @@
                     </div>
                     <div class="bg-white p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100">
                         <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Realized Profit</p>
-                        <p id="dashProfitContainer" class="text-xl font-extrabold text-green-500"><span id="dashProfit">0.00</span></p>
+                        <p id="dashProfitContainer" class="text-xl font-extrabold text-green-500"><span id="dashProfit">$0.00</span></p>
                     </div>
                     <div class="bg-white p-5 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 col-span-2 flex justify-between items-center">
                         <div>
@@ -703,8 +703,8 @@
                     let profit = d.totalSalePrice - d.totalCostBasis;
                     totalRealizedProfit += profit;
                     
-                    // Aggregate stats for Dashboard Insights
-                    if(!insightsData[d.name]) insightsData[d.name] = { sold: 0, profit: 0, ripped: 0 };
+                    // FIXED: Properly injecting the name so it isn't "undefined"
+                    if(!insightsData[d.name]) insightsData[d.name] = { name: d.name || 'Unknown', sold: 0, profit: 0, ripped: 0 };
                     insightsData[d.name].sold += d.qtySold;
                     insightsData[d.name].profit += profit;
                     if(d.platform === 'Ripped/Opened') insightsData[d.name].ripped += d.qtySold;
@@ -730,8 +730,8 @@
                             let profit = d.sellPrice - d.buyPrice;
                             totalRealizedProfit += profit;
                             
-                            // Legacy stats aggregation
-                            if(!insightsData[d.name]) insightsData[d.name] = { sold: 0, profit: 0, ripped: 0 };
+                            // FIXED: Properly injecting the name here as well
+                            if(!insightsData[d.name]) insightsData[d.name] = { name: d.name || 'Unknown', sold: 0, profit: 0, ripped: 0 };
                             insightsData[d.name].sold += 1;
                             insightsData[d.name].profit += profit;
                         }
@@ -843,13 +843,12 @@
                     `;
                 });
 
-                // Build Performance Insights HTML
                 let statsHtml = '';
                 let statsArr = Object.values(insightsData).filter(s => s.sold > 0);
                 if (statsArr.length === 0) {
                     statsHtml = '<p class="text-gray-400 text-sm font-medium">Not enough sales data yet.</p>';
                 } else {
-                    statsArr.sort((a,b) => b.sold - a.sold); // Sort by volume moved
+                    statsArr.sort((a,b) => b.sold - a.sold); 
                     statsArr.forEach(st => {
                         let avgProfit = st.profit / st.sold;
                         statsHtml += `
@@ -860,7 +859,7 @@
                             </div>
                             <div class="text-right shrink-0">
                                 <p class="text-[10px] uppercase font-bold text-gray-400">Avg Profit</p>
-                                <p class="font-extrabold text-sm ${avgProfit >= 0 ? 'text-green-500' : 'text-red-500'}">${avgProfit >= 0 ? '+' : ''}$${avgProfit.toFixed(2)}/ea</p>
+                                <p class="font-extrabold text-sm ${avgProfit >= 0 ? 'text-green-500' : 'text-red-500'}">${avgProfit >= 0 ? '+' : ''}$${Math.abs(avgProfit).toFixed(2)}/ea</p>
                             </div>
                         </div>
                         `;
@@ -874,10 +873,10 @@
                 
                 document.getElementById('dashInvested').innerText = totalInvestedActive.toFixed(2);
                 
-                // Color Logic for Realized Profit
+                // FIXED: Handle Negative Sign cleanly
                 const dashProfitContainer = document.getElementById('dashProfitContainer');
                 const dashProfitEl = document.getElementById('dashProfit');
-                dashProfitEl.innerText = (totalRealizedProfit < 0 ? '-' : '') + totalRealizedProfit.toFixed(2);
+                dashProfitEl.innerText = (totalRealizedProfit < 0 ? '-$' : '$') + Math.abs(totalRealizedProfit).toFixed(2);
                 
                 if (totalRealizedProfit < 0) {
                     dashProfitContainer.classList.remove('text-green-500');
@@ -969,7 +968,6 @@
             btn.innerText = "Processing...";
             btn.disabled = true;
             
-            // Reusing the core deduction logic, but forcing a $0 sale price and labeling it as a rip
             await processRemoval(name, ripDateInput, qtyToRip, maxQty, 0, "Ripped/Opened", btn, closeRipModal);
         });
 
