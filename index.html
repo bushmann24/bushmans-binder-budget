@@ -506,7 +506,8 @@
                 switchTab('vault');
                 loadData();
             } catch (error) {
-                alert("Database save failed.");
+                alert("Database save failed: " + error.message);
+                console.error("Save Error:", error);
                 btn.innerText = "Add to Vault"; btn.disabled = false;
             }
         });
@@ -579,7 +580,7 @@
                 btn.disabled = false;
                 loadData();
             } catch(e) {
-                alert("Failed to edit.");
+                alert("Failed to edit: " + e.message);
                 btn.innerText = "Save Changes";
                 btn.disabled = false;
             }
@@ -744,7 +745,7 @@
 
             } catch (error) {
                 document.getElementById('initialLoader').classList.add('hidden');
-                alert("Failed to load your vault data. Ensure your Firestore Security rules are updated.");
+                alert("Failed to load your vault data: " + error.message);
             }
         }
 
@@ -834,7 +835,7 @@
                 loadData(); 
 
             } catch (error) {
-                alert("Failed to process sale.");
+                alert("Failed to process sale: " + error.message);
                 btn.innerText = "Confirm Sale";
                 btn.disabled = false;
             }
@@ -847,7 +848,7 @@
                 await deleteDoc(doc(db, collectionName, docId));
                 loadData();
             } catch (error) {
-                alert("Failed to delete entry.");
+                alert("Failed to delete entry: " + error.message);
             }
         }
     </script>
