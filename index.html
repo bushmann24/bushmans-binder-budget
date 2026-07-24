@@ -70,7 +70,7 @@
 
     <!-- EDIT PURCHASE MODAL -->
     <div id="editModal" class="hidden fixed inset-0 bg-black/50 z-[200] flex justify-center items-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
             <h2 class="text-2xl font-extrabold text-gray-800 mb-4">Edit Purchase</h2>
             <input type="hidden" id="editDocId">
             <input type="hidden" id="editCollection">
@@ -217,49 +217,49 @@
                 <div id="activeList" class="space-y-4"></div>
             </div>
 
-            <!-- ADD ITEM TAB -->
+            <!-- ADD ITEM TAB (NOW MULTI-ITEM SUPPORT) -->
             <div id="tab-add" class="tab-content">
-                <h2 class="text-2xl font-bold mb-5 text-gray-800">Log Purchase</h2>
-                <div class="bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 space-y-4">
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Purchase Date</label>
-                        <input type="date" id="addDate" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Product Name</label>
-                        <div class="flex gap-2">
-                            <select id="addName" class="flex-1 p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
-                            <button type="button" onclick="openManageModal('products')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-5 rounded-2xl transition-colors text-2xl leading-none">+</button>
-                        </div>
-                    </div>
-                    
+                <h2 class="text-2xl font-bold mb-5 text-gray-800">Log Order</h2>
+                
+                <div class="bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-gray-100 mb-4 space-y-4">
+                    <h3 class="font-extrabold text-gray-700 text-lg mb-2">Order Details</h3>
                     <div class="flex gap-4">
                         <div class="flex-1">
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Quantity</label>
-                            <input type="number" id="addQty" value="1" min="1" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Order Date</label>
+                            <input type="date" id="addDate" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
-                        <div class="flex-[2]">
-                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Total Buy Price ($)</label>
-                            <input type="number" id="addBuyPrice" placeholder="$0.00" class="w-full p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Buyer / Platform Source</label>
-                        <div class="flex gap-2">
-                            <select id="addSource" class="flex-1 p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
-                            <button type="button" onclick="openManageModal('sources')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-5 rounded-2xl transition-colors text-2xl leading-none">+</button>
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Seller / Source</label>
+                            <div class="flex gap-2">
+                                <select id="addSource" class="flex-1 p-4 border border-gray-200 rounded-2xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                                <button type="button" onclick="openManageModal('sources')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-4 rounded-2xl transition-colors text-xl leading-none">+</button>
+                            </div>
                         </div>
                     </div>
-
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Invoice (PDF/Image)</label>
                         <input type="file" id="addFile" class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
                     </div>
-                    
-                    <button type="button" id="saveItemBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-4 rounded-2xl shadow-lg shadow-blue-200 mt-4 transition-all active:scale-95">Add to Vault</button>
+                </div>
+
+                <div class="flex justify-between items-end mb-3 mt-6">
+                    <h3 class="font-extrabold text-gray-700 text-lg">Items Received</h3>
+                    <button type="button" onclick="addPurchaseRow()" class="text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition-colors">+ Add Row</button>
+                </div>
+
+                <div id="purchaseRows" class="space-y-4 mb-24">
+                    <!-- Dynamic Rows Injected Here -->
+                </div>
+
+                <!-- STICKY TOTAL FOOTER -->
+                <div class="fixed bottom-[88px] left-0 w-full p-4 pointer-events-none z-[100] pb-2">
+                    <div class="bg-white/90 backdrop-blur-md border border-gray-200 shadow-[0_-10px_40px_rgb(0,0,0,0.1)] p-4 rounded-3xl mx-2 pointer-events-auto flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Grand Total</p>
+                            <p class="text-2xl font-extrabold text-blue-600">$<span id="grandTotal">0.00</span></p>
+                        </div>
+                        <button type="button" id="saveItemBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-95">Save Order</button>
+                    </div>
                 </div>
             </div>
 
@@ -278,7 +278,7 @@
         </main>
 
         <!-- PREMIUM SVG BOTTOM NAVIGATION -->
-        <nav class="bg-white border-t border-gray-100 flex justify-between items-end w-full pb-6 pt-3 px-2 shadow-[0_-10px_40px_rgb(0,0,0,0.05)] rounded-t-3xl shrink-0 z-40">
+        <nav class="bg-white border-t border-gray-100 flex justify-between items-end w-full pb-6 pt-3 px-2 shadow-[0_-10px_40px_rgb(0,0,0,0.05)] rounded-t-3xl shrink-0 z-40 relative">
             <button type="button" onclick="switchTab('dashboard')" class="nav-btn flex-1 flex flex-col items-center text-blue-600">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
                 <span class="text-[9px] font-bold tracking-wide">Dash</span>
@@ -332,6 +332,7 @@
         let currentUser = null;
         let globalSettings = { products: [], sources: [] };
         let currentManageType = ''; 
+        let purchaseRowCounter = 0;
 
         document.getElementById('addDate').valueAsDate = new Date();
 
@@ -368,6 +369,11 @@
                 
                 await loadUserSettings();
                 await loadData();
+                
+                // Initialize the first empty row for purchases
+                if(document.getElementById('purchaseRows').children.length === 0) {
+                    addPurchaseRow();
+                }
             } else {
                 currentUser = null;
                 document.getElementById('loginScreen').classList.remove('hidden');
@@ -421,13 +427,35 @@
             }
         }
 
+        function updateSelectSafely(elId, htmlOptions) {
+            const el = document.getElementById(elId);
+            if(!el) return;
+            const currentVal = el.value;
+            el.innerHTML = htmlOptions;
+            if(currentVal) el.value = currentVal;
+        }
+
         function renderDropdowns() {
             const buildOptions = (arr) => `<option value="" disabled selected>Select from list...</option>` + arr.map(item => `<option value="${item}">${item}</option>`).join('');
-            document.getElementById('addName').innerHTML = buildOptions(globalSettings.products);
-            document.getElementById('addSource').innerHTML = buildOptions(globalSettings.sources);
-            document.getElementById('sellPlatform').innerHTML = buildOptions(globalSettings.sources);
-            document.getElementById('editName').innerHTML = buildOptions(globalSettings.products);
-            document.getElementById('editSource').innerHTML = buildOptions(globalSettings.sources);
+            
+            const pOptions = buildOptions(globalSettings.products);
+            const sOptions = buildOptions(globalSettings.sources);
+
+            updateSelectSafely('addSource', sOptions);
+            updateSelectSafely('sellPlatform', sOptions);
+            updateSelectSafely('editSource', sOptions);
+            updateSelectSafely('editName', pOptions);
+
+            // Update all dynamic purchase row product dropdowns without erasing their selections
+            document.querySelectorAll('.row-name').forEach(select => {
+                const currentVal = select.value;
+                select.innerHTML = pOptions;
+                if(currentVal && globalSettings.products.includes(currentVal)) {
+                    select.value = currentVal;
+                } else {
+                    select.selectedIndex = 0;
+                }
+            });
         }
 
         window.openManageModal = function(type) {
@@ -523,31 +551,99 @@
             await updateSettings();
         }
 
-        // Add Purchase Logic
+        // --- NEW MULTI-ITEM PURCHASE LOGIC ---
+
+        window.addPurchaseRow = function() {
+            purchaseRowCounter++;
+            const rowId = `purchaseRow_${purchaseRowCounter}`;
+            
+            const rowHtml = `
+                <div id="${rowId}" class="purchase-row relative bg-white border border-gray-100 shadow-sm p-5 rounded-3xl animate-[fadeIn_0.2s_ease-out]">
+                    <button type="button" onclick="removePurchaseRow('${rowId}')" class="absolute top-3 right-4 text-gray-300 hover:text-red-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                    
+                    <div class="pr-6 mb-4">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Item Name</label>
+                        <div class="flex gap-2">
+                            <select class="row-name flex-1 p-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                            <button type="button" onclick="openManageModal('products')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-extrabold px-3 rounded-xl transition-colors text-lg leading-none">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 items-end">
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Qty</label>
+                            <input type="number" class="row-qty w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" value="1" min="1">
+                        </div>
+                        <div class="flex-[1.5]">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Total Price ($)</label>
+                            <input type="number" class="row-price w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" oninput="calculateGrandTotal()">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('purchaseRows').insertAdjacentHTML('beforeend', rowHtml);
+            renderDropdowns(); // Populate the new dropdown immediately
+        }
+
+        window.removePurchaseRow = function(rowId) {
+            if (document.querySelectorAll('.purchase-row').length > 1) {
+                document.getElementById(rowId).remove();
+                calculateGrandTotal();
+            } else {
+                alert("You need to log at least one item to save an order.");
+            }
+        }
+
+        window.calculateGrandTotal = function() {
+            let total = 0;
+            document.querySelectorAll('.row-price').forEach(input => {
+                let val = parseFloat(input.value);
+                if(!isNaN(val)) total += val;
+            });
+            document.getElementById('grandTotal').innerText = total.toFixed(2);
+        }
+
         document.getElementById('saveItemBtn').addEventListener('click', async () => {
             if(!currentUser) return;
+            
             const date = document.getElementById('addDate').value;
-            const name = document.getElementById('addName').value;
-            const qty = parseInt(document.getElementById('addQty').value);
-            const buyPrice = parseFloat(document.getElementById('addBuyPrice').value);
             const source = document.getElementById('addSource').value;
             const file = document.getElementById('addFile').files[0];
             const btn = document.getElementById('saveItemBtn');
             
-            if(!date || !name || isNaN(qty) || isNaN(buyPrice) || !source) {
-                alert("Please fill out all required fields.");
+            if(!date || !source) {
+                alert("Please select an Order Date and Seller/Source.");
                 return;
             }
 
-            btn.innerText = "Saving...";
+            // Validate all rows before hitting database
+            const rows = document.querySelectorAll('.purchase-row');
+            let itemsToSave = [];
+            
+            for(let row of rows) {
+                const name = row.querySelector('.row-name').value;
+                const qty = parseInt(row.querySelector('.row-qty').value);
+                const price = parseFloat(row.querySelector('.row-price').value);
+                
+                if(!name || isNaN(qty) || qty < 1 || isNaN(price)) {
+                    alert("Please ensure all items have a valid Product Name, Quantity, and Price.");
+                    return;
+                }
+                
+                itemsToSave.push({ name, qty, price });
+            }
+
+            btn.innerText = "Processing Order...";
             btn.disabled = true;
 
             let fileUrl = "";
             if(file) {
                 const ext = file.name.split('.').pop();
-                const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_'); 
                 const dateFormatted = date.replace(/-/g, '/'); 
-                const newFileName = `${dateFormatted}-${cleanName}.${ext}`;
+                const newFileName = `${dateFormatted}-multi-order-${Date.now()}.${ext}`;
                 
                 const storageRef = ref(storage, `users/${currentUser.uid}/invoices/${newFileName}`);
                 await uploadBytes(storageRef, file);
@@ -555,33 +651,40 @@
             }
 
             try {
-                await addDoc(collection(db, "purchases"), {
-                    userId: currentUser.uid,
-                    date: date,
-                    name: name,
-                    totalQty: qty,
-                    remainingQty: qty,
-                    totalBuyPrice: buyPrice,
-                    unitCost: buyPrice / qty,
-                    source: source,
-                    fileUrl: fileUrl,
-                    timestamp: new Date().toISOString()
+                // Save each item as an independent lot in the vault sharing the same date/source/invoice
+                const savePromises = itemsToSave.map(item => {
+                    return addDoc(collection(db, "purchases"), {
+                        userId: currentUser.uid,
+                        date: date,
+                        name: item.name,
+                        totalQty: item.qty,
+                        remainingQty: item.qty,
+                        totalBuyPrice: item.price,
+                        unitCost: item.price / item.qty,
+                        source: source,
+                        fileUrl: fileUrl,
+                        timestamp: new Date().toISOString()
+                    });
                 });
 
-                document.getElementById('addName').selectedIndex = 0;
-                document.getElementById('addQty').value = '1';
-                document.getElementById('addBuyPrice').value = '';
+                await Promise.all(savePromises);
+
+                // Reset Form
                 document.getElementById('addSource').selectedIndex = 0;
                 document.getElementById('addFile').value = '';
+                document.getElementById('purchaseRows').innerHTML = '';
+                addPurchaseRow(); // Reset back to a single empty row
+                calculateGrandTotal();
                 
-                btn.innerText = "Add to Vault";
+                btn.innerText = "Save Order";
                 btn.disabled = false;
                 
                 switchTab('vault');
                 loadData();
             } catch (error) {
                 alert("Database save failed: " + error.message);
-                btn.innerText = "Add to Vault"; btn.disabled = false;
+                btn.innerText = "Save Order"; 
+                btn.disabled = false;
             }
         });
 
@@ -603,7 +706,7 @@
             document.getElementById('editName').value = item.name;
             document.getElementById('editQty').value = item.totalQty;
             
-            // This is the new Override feature
+            // This is the Override feature
             document.getElementById('editRemainingQty').value = item.remainingQty;
             
             document.getElementById('editBuyPrice').value = item.totalBuyPrice;
