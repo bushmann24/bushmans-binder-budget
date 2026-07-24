@@ -48,6 +48,7 @@
             <input type="hidden" id="editCollection">
             <input type="hidden" id="editOriginalQty">
             <input type="hidden" id="editRemainingQty">
+            <input type="hidden" id="editOldName">
 
             <div class="space-y-4">
                 <div>
@@ -438,12 +439,46 @@
             }
         }
 
+        // SMART SYNC - CASCADE UPDATES FROM THE MANAGE LIST MENU
         window.editOption = async function(index) {
             const items = currentManageType === 'products' ? globalSettings.products : globalSettings.sources;
-            const newVal = prompt("Edit name:", items[index]);
-            if(newVal && newVal.trim() !== '' && newVal.trim() !== items[index]) {
-                items[index] = newVal.trim();
+            const oldName = items[index];
+            const newVal = prompt("Edit name:", oldName);
+            
+            if(newVal && newVal.trim() !== '' && newVal.trim() !== oldName) {
+                const finalVal = newVal.trim();
+                items[index] = finalVal;
                 await updateSettings();
+
+                // Ask the user if they want to sync all historical records
+                if (confirm(`Do you also want to update ALL past purchases and sales from "${oldName}" to "${finalVal}" to keep your history matching?`)) {
+                    document.getElementById('initialLoader').classList.remove('hidden');
+                    try {
+                        const fieldToUpdate = currentManageType === 'products' ? 'name' : 'source';
+                        const salesField = currentManageType === 'products' ? 'name' : 'platform';
+                        
+                        const updatePromises = [];
+
+                        const qP = query(collection(db, "purchases"), where("userId", "==", currentUser.uid), where(fieldToUpdate, "==", oldName));
+                        const snapP = await getDocs(qP);
+                        snapP.forEach(d => updatePromises.push(updateDoc(doc(db, "purchases", d.id), { [fieldToUpdate]: finalVal })));
+
+                        const qS = query(collection(db, "sales"), where("userId", "==", currentUser.uid), where(salesField, "==", oldName));
+                        const snapS = await getDocs(qS);
+                        snapS.forEach(d => updatePromises.push(updateDoc(doc(db, "sales", d.id), { [salesField]: finalVal })));
+
+                        const qC = query(collection(db, "cards"), where("userId", "==", currentUser.uid), where(fieldToUpdate, "==", oldName));
+                        const snapC = await getDocs(qC);
+                        snapC.forEach(d => updatePromises.push(updateDoc(doc(db, "cards", d.id), { [fieldToUpdate]: finalVal })));
+
+                        await Promise.all(updatePromises);
+                        alert("Success! All records updated.");
+                        loadData();
+                    } catch(e) {
+                        alert("Failed to update historical records: " + e.message);
+                    }
+                    document.getElementById('initialLoader').classList.add('hidden');
+                }
             }
         }
 
@@ -454,7 +489,7 @@
             await updateSettings();
         }
 
-        // Add Purchase Logic
+        // Add Purchase Logic with Custom PDF Renaming
         document.getElementById('saveItemBtn').addEventListener('click', async () => {
             if(!currentUser) return;
             const date = document.getElementById('addDate').value;
@@ -475,7 +510,13 @@
 
             let fileUrl = "";
             if(file) {
-                const storageRef = ref(storage, `users/${currentUser.uid}/${Date.now()}_${file.name}`);
+                // Formatting File Name: YYYY/MM/DD-Productname
+                const ext = file.name.split('.').pop();
+                const cleanName = name.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '_'); 
+                const dateFormatted = date.replace(/-/g, '/'); // Formats 2024-05-15 to 2024/05/15
+                const newFileName = `${dateFormatted}-${cleanName}.${ext}`;
+                
+                const storageRef = ref(storage, `users/${currentUser.uid}/invoices/${newFileName}`);
                 await uploadBytes(storageRef, file);
                 fileUrl = await getDownloadURL(storageRef);
             }
@@ -526,6 +567,7 @@
             document.getElementById('editCollection').value = collectionName;
             document.getElementById('editOriginalQty').value = item.totalQty;
             document.getElementById('editRemainingQty').value = item.remainingQty;
+            document.getElementById('editOldName').value = item.name;
 
             document.getElementById('editDate').value = item.date;
             document.getElementById('editName').value = item.name;
@@ -540,11 +582,13 @@
             document.getElementById('editModal').classList.add('hidden');
         }
 
+        // SMART SYNC - CASCADE UPDATES FROM THE SINGLE EDIT MENU
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
             const id = document.getElementById('editDocId').value;
             const collectionName = document.getElementById('editCollection').value;
             const originalQty = parseInt(document.getElementById('editOriginalQty').value);
             const remainingQty = parseInt(document.getElementById('editRemainingQty').value);
+            const oldName = document.getElementById('editOldName').value;
 
             const date = document.getElementById('editDate').value;
             const name = document.getElementById('editName').value;
@@ -552,7 +596,6 @@
             const totalBuyPrice = parseFloat(document.getElementById('editBuyPrice').value);
             const source = document.getElementById('editSource').value;
 
-            // Prevent users from setting quantity lower than what they've already sold
             let soldFromThisLot = originalQty - remainingQty;
             let newRemaining = newTotalQty - soldFromThisLot;
 
@@ -561,11 +604,18 @@
                 return;
             }
 
+            let syncAll = false;
+            if (oldName !== name) {
+                syncAll = confirm(`You changed the product name. Do you want to automatically update ALL past purchases and sales from "${oldName}" to "${name}" as well?`);
+            }
+
             const btn = document.getElementById('saveEditBtn');
             btn.innerText = "Saving...";
             btn.disabled = true;
+            document.getElementById('initialLoader').classList.remove('hidden');
 
             try {
+                // Update this specific entry
                 await updateDoc(doc(db, collectionName, id), {
                     date: date,
                     name: name,
@@ -575,6 +625,25 @@
                     unitCost: totalBuyPrice / newTotalQty,
                     source: source
                 });
+
+                // If user wants to cascade the name change to everything else
+                if (syncAll) {
+                    const updatePromises = [];
+                    const qP = query(collection(db, "purchases"), where("userId", "==", currentUser.uid), where("name", "==", oldName));
+                    const snapP = await getDocs(qP);
+                    snapP.forEach(d => { if(d.id !== id) updatePromises.push(updateDoc(doc(db, "purchases", d.id), { name: name })) });
+
+                    const qS = query(collection(db, "sales"), where("userId", "==", currentUser.uid), where("name", "==", oldName));
+                    const snapS = await getDocs(qS);
+                    snapS.forEach(d => updatePromises.push(updateDoc(doc(db, "sales", d.id), { name: name })));
+
+                    const qC = query(collection(db, "cards"), where("userId", "==", currentUser.uid), where("name", "==", oldName));
+                    const snapC = await getDocs(qC);
+                    snapC.forEach(d => updatePromises.push(updateDoc(doc(db, "cards", d.id), { name: name })));
+
+                    await Promise.all(updatePromises);
+                }
+
                 closeEditModal();
                 btn.innerText = "Save Changes";
                 btn.disabled = false;
@@ -583,6 +652,7 @@
                 alert("Failed to edit: " + e.message);
                 btn.innerText = "Save Changes";
                 btn.disabled = false;
+                document.getElementById('initialLoader').classList.add('hidden');
             }
         });
 
@@ -607,7 +677,6 @@
                     totalRealizedProfit += (d.totalSalePrice - d.totalCostBasis);
                 });
 
-                // Bridge Legacy Cards
                 try {
                     const qLegacy = query(collection(db, "cards"), where("userId", "==", currentUser.uid));
                     const snapLegacy = await getDocs(qLegacy);
@@ -621,7 +690,6 @@
                             else if (typeof d.dateAdded === 'string') formattedDate = d.dateAdded.split('T')[0];
                         }
                         
-                        // We strictly rely on the status field for legacy items
                         if (d.status === 'active') {
                             allPurchases.push({ id: doc.id, collection: 'cards', name: d.name, totalQty: 1, remainingQty: 1, totalBuyPrice: d.buyPrice, unitCost: d.buyPrice, source: d.source || "Unknown", date: formattedDate, timestamp: formattedDate });
                         } else if (d.status === 'sold') {
@@ -631,11 +699,9 @@
                     });
                 } catch (legacyErr) { }
 
-                // Sort logic
                 allPurchases.sort((a, b) => new Date(a.date || a.timestamp) - new Date(b.date || b.timestamp));
                 allSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-                // Save to window for Edit Modal lookup
                 window.allPurchasesData = allPurchases;
 
                 let vaultAgg = {};
@@ -644,6 +710,9 @@
                 let buyHistoryHtml = '';
 
                 allPurchases.forEach(p => {
+                    // Injecting Invoice link if a fileUrl exists for this purchase
+                    let invoiceLink = p.fileUrl ? `<a href="${p.fileUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs text-blue-500 font-bold hover:text-blue-700 mt-2 bg-blue-50 px-2 py-1 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg> View Invoice</a>` : '';
+
                     buyHistoryHtml = `
                         <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] mb-3 relative group">
                             <div class="absolute top-4 right-4 flex gap-3">
@@ -662,6 +731,7 @@
                                     <p class="text-gray-500 font-medium">Bought: <span class="font-bold text-gray-800">${p.totalQty}</span> from ${p.source}</p>
                                     <p class="text-gray-500 font-medium text-xs mt-1">Remaining: ${p.remainingQty}</p>
                                     <p class="text-xs text-gray-400 font-bold mt-1">${p.date}</p>
+                                    ${invoiceLink}
                                 </div>
                                 <div class="text-right">
                                     <p class="font-bold text-red-500">$${p.totalBuyPrice.toFixed(2)}</p>
@@ -751,7 +821,7 @@
 
         // Sell Modal Logic
         window.openSellModal = function(productName, maxQty) {
-            document.getElementById('sellDate').valueAsDate = new Date(); // Default to today
+            document.getElementById('sellDate').valueAsDate = new Date(); 
             document.getElementById('sellProductName').value = productName;
             document.getElementById('sellModalProduct').innerText = productName;
             document.getElementById('sellMaxQty').value = maxQty;
@@ -790,7 +860,6 @@
                 let totalCostBasis = 0;
                 let initialQtyToSell = qtyToSell;
 
-                // FIFO math to deduct sold items properly from the oldest batches first
                 for (let lot of lots) {
                     if (qtyToSell <= 0) break;
                     
@@ -801,7 +870,6 @@
                     qtyToSell -= takeFromThisLot;
                     let newRemaining = lot.remainingQty - takeFromThisLot;
                     
-                    // THIS IS THE CRITICAL BUG FIX: Ensure legacy cards update their status!
                     if (lot.collection === 'cards') {
                         await updateDoc(doc(db, lot.collection, lot.id), {
                             status: 'sold',
@@ -815,7 +883,6 @@
                     }
                 }
 
-                // Append custom time string so sorting works properly
                 const sellTimestamp = sellDateInput + "T12:00:00.000Z";
 
                 await addDoc(collection(db, "sales"), {
