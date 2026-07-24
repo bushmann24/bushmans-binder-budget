@@ -74,8 +74,6 @@
             <h2 class="text-2xl font-extrabold text-gray-800 mb-4">Edit Purchase</h2>
             <input type="hidden" id="editDocId">
             <input type="hidden" id="editCollection">
-            <input type="hidden" id="editOriginalQty">
-            <input type="hidden" id="editRemainingQty">
             <input type="hidden" id="editOldName">
 
             <div class="space-y-4">
@@ -91,14 +89,20 @@
                     </div>
                 </div>
                 <div class="flex gap-4">
-                    <div class="flex-1">
+                    <div class="flex-[1.5]">
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Qty</label>
                         <input type="number" id="editQty" min="1" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <div class="flex-[2]">
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Buy Price ($)</label>
-                        <input type="number" id="editBuyPrice" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-purple-500 uppercase tracking-wider mb-1">Remaining Qty</label>
+                        <input type="number" id="editRemainingQty" min="0" class="w-full p-3 border border-purple-200 rounded-xl bg-purple-50 text-purple-700 font-bold focus:ring-2 focus:ring-purple-500 outline-none" title="Manually fix missing inventory here">
                     </div>
+                </div>
+                <p class="text-[10px] text-gray-400 leading-tight mt-1 mb-2">* Use <strong>Remaining Qty</strong> to manually force items back into your vault if old records got out of sync.</p>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Total Buy Price ($)</label>
+                    <input type="number" id="editBuyPrice" class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Source</label>
@@ -593,13 +597,15 @@
 
             document.getElementById('editDocId').value = id;
             document.getElementById('editCollection').value = collectionName;
-            document.getElementById('editOriginalQty').value = item.totalQty;
-            document.getElementById('editRemainingQty').value = item.remainingQty;
             document.getElementById('editOldName').value = item.name;
 
             document.getElementById('editDate').value = item.date;
             document.getElementById('editName').value = item.name;
             document.getElementById('editQty').value = item.totalQty;
+            
+            // This is the new Override feature
+            document.getElementById('editRemainingQty').value = item.remainingQty;
+            
             document.getElementById('editBuyPrice').value = item.totalBuyPrice;
             document.getElementById('editSource').value = item.source;
 
@@ -613,21 +619,22 @@
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
             const id = document.getElementById('editDocId').value;
             const collectionName = document.getElementById('editCollection').value;
-            const originalQty = parseInt(document.getElementById('editOriginalQty').value);
-            const remainingQty = parseInt(document.getElementById('editRemainingQty').value);
             const oldName = document.getElementById('editOldName').value;
 
             const date = document.getElementById('editDate').value;
             const name = document.getElementById('editName').value;
             const newTotalQty = parseInt(document.getElementById('editQty').value);
+            const newRemaining = parseInt(document.getElementById('editRemainingQty').value);
             const totalBuyPrice = parseFloat(document.getElementById('editBuyPrice').value);
             const source = document.getElementById('editSource').value;
 
-            let soldFromThisLot = originalQty - remainingQty;
-            let newRemaining = newTotalQty - soldFromThisLot;
+            if(isNaN(newTotalQty) || isNaN(newRemaining) || newRemaining < 0 || newTotalQty < 1) {
+                alert("Please enter valid quantities.");
+                return;
+            }
 
-            if (newRemaining < 0) {
-                alert(`You have already sold ${soldFromThisLot} of these. Total quantity cannot be less than ${soldFromThisLot}.`);
+            if (newRemaining > newTotalQty) {
+                alert("Remaining quantity cannot be higher than your Total quantity.");
                 return;
             }
 
@@ -1045,7 +1052,6 @@
             document.getElementById('initialLoader').classList.remove('hidden');
             
             try {
-                // If deleting a Sale or Rip, trace back and refund the inventory
                 if (collectionName === 'sales') {
                     const saleRef = doc(db, collectionName, docId);
                     const saleSnap = await getDoc(saleRef);
@@ -1053,18 +1059,15 @@
                         let sData = saleSnap.data();
                         let refundQty = sData.qtySold;
                         
-                        // Grab all purchases of this item
                         const qP = query(collection(db, "purchases"), where("userId", "==", currentUser.uid), where("name", "==", sData.name));
                         const snapP = await getDocs(qP);
                         let lots = [];
                         snapP.forEach(d => lots.push({id: d.id, collection: 'purchases', ...d.data()}));
                         
-                        // Grab legacy cards of this item
                         const qC = query(collection(db, "cards"), where("userId", "==", currentUser.uid), where("name", "==", sData.name));
                         const snapC = await getDocs(qC);
                         snapC.forEach(d => lots.push({id: d.id, collection: 'cards', ...d.data()}));
 
-                        // Sort newest first to refund the most recently emptied lots
                         lots.sort((a, b) => new Date(b.date || b.timestamp) - new Date(a.date || a.timestamp));
 
                         for (let lot of lots) {
